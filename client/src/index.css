@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: #c7d2fe;
+  color: #312e81;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+@layer components {
+  /* ---- Buttons ---- */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-button bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-700 hover:shadow-md active:bg-brand-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-button border border-surface-200 bg-white px-4 py-2.5 text-sm font-semibold text-surface-700 shadow-card transition-all duration-150 hover:bg-surface-50 hover:border-surface-300 hover:shadow-card-hover active:bg-surface-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-button px-3 py-2 text-sm font-medium text-surface-600 transition-all duration-150 hover:bg-surface-100 hover:text-surface-900 active:bg-surface-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-button border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition-all duration-150 hover:bg-red-50 hover:border-red-300 active:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ---- Form controls ---- */
+  .input-field {
+    @apply w-full rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15;
+  }
+
+  .textarea-field {
+    @apply input-field resize-y;
+  }
+
+  /* Select with native chevron removed (use appearance-none) */
+  .select-field {
+    @apply input-field appearance-none pr-9;
+  }
+
+  /* ---- Structure ---- */
+  .card {
+    @apply rounded-card border border-surface-200 bg-white shadow-card;
+  }
+
+  .card-interactive {
+    @apply card cursor-pointer transition-all duration-200 hover:shadow-card-hover hover:border-surface-300;
+  }
+
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-surface-400;
+  }
+
+  .label-text {
+    @apply mb-1.5 block text-sm font-medium text-surface-700;
+  }
+
+  .helper-text {
+    @apply text-xs text-surface-400;
+  }
+
+  /* ---- Badge ---- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .badge-gray {
+    @apply badge bg-surface-100 text-surface-600;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-50 text-brand-700;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-50 text-emerald-700;
+  }
+
+  /* ---- Icon buttons ---- */
+  .icon-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-button text-surface-400 transition-colors duration-150 hover:bg-surface-100 hover:text-surface-700 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  /* ---- Tooltip ---- */
+  .tooltip {
+    @apply absolute z-30 rounded-button bg-surface-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-elevated transition-opacity duration-150 group-hover:opacity-100 pointer-events-none whitespace-nowrap;
+  }
+}
+
+/* Resume preview paper */
+.paper {
+  aspect-ratio: 1 / 1.414;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    position: static !important;
+    overflow: visible !important;
+    width: 210mm !important;
+    max-height: none !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 14mm !important;
+  }
+  .print-area > * {
+    max-width: 210mm;
+  }
+}
