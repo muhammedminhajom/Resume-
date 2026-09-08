@@ -1,6 +1,7 @@
 const { sanitizeHtml } = require('../lib/sanitize');
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+// Supported models: gemini-2.0-flash (fast), gemini-1.5-flash (stable)
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const OPENAI_MODEL = 'gpt-4o-mini';
@@ -21,7 +22,10 @@ Rewrite the rough bullet into a polished resume bullet point.`;
 }
 
 async function callGemini(prompt) {
-  const url = `${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment.');
+
+  const url = `${GEMINI_URL}?key=${apiKey}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,7 +36,10 @@ async function callGemini(prompt) {
   });
 
   if (!res.ok) {
-    throw new Error(`Gemini API error (${res.status})`);
+    const errBody = await res.json().catch(() => ({}));
+    const msg = errBody?.error?.message || res.statusText;
+    console.error(`[ai/gemini] ${res.status} error — ${msg}`);
+    throw new Error(`Gemini API error (${res.status}): ${msg}`);
   }
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;

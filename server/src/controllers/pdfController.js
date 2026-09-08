@@ -1,9 +1,9 @@
-const Resume = require('../models/Resume');
+const { getResumeById } = require('../services/dbService');
 const { generatePdf } = require('../services/pdfService');
 
 async function exportPdf(req, res, next) {
   try {
-    const resume = await Resume.findOne({ _id: req.params.id, user_id: req.user.id });
+    const resume = await getResumeById(req.params.id, req.user.id);
     if (!resume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }

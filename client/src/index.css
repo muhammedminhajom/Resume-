@@ -34,20 +34,20 @@ textarea::placeholder {
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-button border border-surface-200 bg-white px-4 py-2.5 text-sm font-semibold text-surface-700 shadow-card transition-all duration-150 hover:bg-surface-50 hover:border-surface-300 hover:shadow-card-hover active:bg-surface-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-button border border-surface-200 bg-white px-4 py-2.5 text-sm font-semibold text-surface-700 shadow-card transition-all duration-150 hover:bg-surface-50 hover:border-surface-300 hover:shadow-card-hover active:bg-surface-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed dark:border-surface-700 dark:bg-surface-800 dark:text-surface-200 dark:hover:bg-surface-700 dark:hover:border-surface-600;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-button px-3 py-2 text-sm font-medium text-surface-600 transition-all duration-150 hover:bg-surface-100 hover:text-surface-900 active:bg-surface-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-button px-3 py-2 text-sm font-medium text-surface-600 transition-all duration-150 hover:bg-surface-100 hover:text-surface-900 active:bg-surface-200 disabled:opacity-50 disabled:cursor-not-allowed dark:text-surface-300 dark:hover:bg-surface-800 dark:hover:text-surface-100;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-button border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition-all duration-150 hover:bg-red-50 hover:border-red-300 active:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-button border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition-all duration-150 hover:bg-red-50 hover:border-red-300 active:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-red-900/60 dark:bg-surface-800 dark:text-red-400 dark:hover:bg-red-950/40;
   }
 
   /* ---- Form controls ---- */
   .input-field {
-    @apply w-full rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15;
+    @apply w-full rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-500 dark:hover:border-surface-600 dark:focus:border-brand-400 dark:focus:ring-brand-500/25;
   }
 
   .textarea-field {
@@ -61,23 +61,23 @@ textarea::placeholder {
 
   /* ---- Structure ---- */
   .card {
-    @apply rounded-card border border-surface-200 bg-white shadow-card;
+    @apply rounded-card border border-surface-200 bg-white shadow-card dark:border-surface-800 dark:bg-surface-900;
   }
 
   .card-interactive {
-    @apply card cursor-pointer transition-all duration-200 hover:shadow-card-hover hover:border-surface-300;
+    @apply card cursor-pointer transition-all duration-200 hover:shadow-card-hover hover:border-surface-300 dark:hover:border-surface-700;
   }
 
   .section-title {
-    @apply text-xs font-semibold uppercase tracking-wider text-surface-400;
+    @apply text-xs font-semibold uppercase tracking-wider text-surface-400 dark:text-surface-500;
   }
 
   .label-text {
-    @apply mb-1.5 block text-sm font-medium text-surface-700;
+    @apply mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300;
   }
 
   .helper-text {
-    @apply text-xs text-surface-400;
+    @apply text-xs text-surface-400 dark:text-surface-500;
   }
 
   /* ---- Badge ---- */
@@ -86,25 +86,25 @@ textarea::placeholder {
   }
 
   .badge-gray {
-    @apply badge bg-surface-100 text-surface-600;
+    @apply badge bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300;
   }
 
   .badge-brand {
-    @apply badge bg-brand-50 text-brand-700;
+    @apply badge bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300;
   }
 
   .badge-green {
-    @apply badge bg-emerald-50 text-emerald-700;
+    @apply badge bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300;
   }
 
   /* ---- Icon buttons ---- */
   .icon-btn {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-button text-surface-400 transition-colors duration-150 hover:bg-surface-100 hover:text-surface-700 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-button text-surface-400 transition-colors duration-150 hover:bg-surface-100 hover:text-surface-700 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40 dark:text-surface-400 dark:hover:bg-surface-800 dark:hover:text-surface-200;
   }
 
   /* ---- Tooltip ---- */
   .tooltip {
-    @apply absolute z-30 rounded-button bg-surface-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-elevated transition-opacity duration-150 group-hover:opacity-100 pointer-events-none whitespace-nowrap;
+    @apply absolute z-30 rounded-button bg-surface-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-elevated transition-opacity duration-150 group-hover:opacity-100 pointer-events-none whitespace-nowrap dark:bg-surface-100 dark:text-surface-900;
   }
 }
 
@@ -130,6 +130,23 @@ textarea::placeholder {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 /* Print styles */

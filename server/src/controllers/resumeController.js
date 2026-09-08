@@ -1,16 +1,25 @@
-const Resume = require('../models/Resume');
+const {
+  listResumes,
+  getResumeById,
+  createResume,
+  updateResume,
+  deleteResume,
+} = require('../services/dbService');
 const { sanitizeResumeInput } = require('../lib/sanitize');
 
 function sanitizeBody(body) {
   const allowed = [
     'title',
     'template',
+    'font',
     'personal_info',
     'education',
     'experience',
     'skills',
     'projects',
+    'leadership',
     'certifications',
+    'languages',
     'section_order',
   ];
   const clean = {};
@@ -22,9 +31,7 @@ function sanitizeBody(body) {
 
 async function list(req, res, next) {
   try {
-    const resumes = await Resume.find({ user_id: req.user.id })
-      .sort({ updated_at: -1 })
-      .select('title template section_order created_at updated_at');
+    const resumes = await listResumes(req.user.id);
     return res.json({ resumes });
   } catch (err) {
     return next(err);
@@ -34,7 +41,7 @@ async function list(req, res, next) {
 async function create(req, res, next) {
   try {
     const data = sanitizeBody(req.body);
-    const resume = await Resume.create({ user_id: req.user.id, ...data });
+    const resume = await createResume(req.user.id, data);
     return res.status(201).json({ resume });
   } catch (err) {
     return next(err);
@@ -43,7 +50,7 @@ async function create(req, res, next) {
 
 async function getOne(req, res, next) {
   try {
-    const resume = await Resume.findOne({ _id: req.params.id, user_id: req.user.id });
+    const resume = await getResumeById(req.params.id, req.user.id);
     if (!resume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
@@ -56,11 +63,7 @@ async function getOne(req, res, next) {
 async function update(req, res, next) {
   try {
     const data = sanitizeBody(req.body);
-    const resume = await Resume.findOneAndUpdate(
-      { _id: req.params.id, user_id: req.user.id },
-      { $set: data },
-      { new: true, runValidators: true }
-    );
+    const resume = await updateResume(req.params.id, req.user.id, data);
     if (!resume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
@@ -72,7 +75,7 @@ async function update(req, res, next) {
 
 async function remove(req, res, next) {
   try {
-    const result = await Resume.findOneAndDelete({ _id: req.params.id, user_id: req.user.id });
+    const result = await deleteResume(req.params.id, req.user.id);
     if (!result) {
       return res.status(404).json({ message: 'Resume not found.' });
     }

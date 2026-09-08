@@ -1,6 +1,10 @@
 node_modules/
 dist/
 .env
-.env.local
+.env*.local
+*.env
 *.log
 .DS_Store
+.vscode/
+backups/
+server/backups/

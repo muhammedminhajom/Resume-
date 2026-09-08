@@ -1,0 +1,308 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import ResumeCard from '../components/ResumeCard';
+import ATSResumeTemplate from '../components/preview/ATSResumeTemplate';
+import { DEFAULT_SECTION_ORDER, SECTION_META, makeSampleResume } from '../lib/resume';
+import { ThemeProvider } from '../context/ThemeContext';
+import ThemeToggle from '../components/ui/ThemeToggle';
+
+describe('Three-Dot Menu on ResumeCard', () => {
+  const sampleResume = {
+    _id: 'resume-123',
+    title: 'Software Engineer Resume',
+    template: 'modern',
+    updated_at: new Date().toISOString(),
+    personal_info: { name: 'Jane Doe' },
+  };
+
+  it('renders three-dot menu button and opens dropdown menu on click', () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    const onDuplicate = vi.fn();
+    const onRename = vi.fn();
+    const onDownload = vi.fn();
+
+    render(
+      <ResumeCard
+        resume={sampleResume}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        onRename={onRename}
+        onDownload={onDownload}
+      />
+    );
+
+    const moreActionsBtn = screen.getByLabelText(/More actions for Software Engineer Resume/i);
+    expect(moreActionsBtn).toBeInTheDocument();
+
+    // Menu should initially be closed
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    // Click to open
+    fireEvent.click(moreActionsBtn);
+
+    const menu = screen.getByRole('menu');
+    expect(menu).toBeInTheDocument();
+
+    // Check actions: Rename, Duplicate, Download PDF, Delete
+    expect(screen.getByRole('menuitem', { name: /Rename/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Duplicate/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Download PDF/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Delete/i })).toBeInTheDocument();
+  });
+
+  it('fires callbacks when menu items are clicked', () => {
+    const onRename = vi.fn();
+    const onDuplicate = vi.fn();
+    const onDownload = vi.fn();
+    const onDelete = vi.fn();
+
+    render(
+      <ResumeCard
+        resume={sampleResume}
+        onEdit={vi.fn()}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        onRename={onRename}
+        onDownload={onDownload}
+      />
+    );
+
+    // Open menu
+    fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
+
+    // Click Rename
+    fireEvent.click(screen.getByRole('menuitem', { name: /Rename/i }));
+    expect(onRename).toHaveBeenCalledWith(sampleResume);
+
+    // Open menu again
+    fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
+
+    // Click Duplicate
+    fireEvent.click(screen.getByRole('menuitem', { name: /Duplicate/i }));
+    expect(onDuplicate).toHaveBeenCalledWith(sampleResume);
+
+    // Open menu again
+    fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
+
+    // Click Download PDF
+    fireEvent.click(screen.getByRole('menuitem', { name: /Download PDF/i }));
+    expect(onDownload).toHaveBeenCalledWith(sampleResume);
+
+    // Open menu again
+    fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
+
+    // Click Delete
+    fireEvent.click(screen.getByRole('menuitem', { name: /Delete/i }));
+    expect(onDelete).toHaveBeenCalledWith(sampleResume);
+  });
+});
+
+describe('Languages, Leadership & Projects - Placement & Rendering', () => {
+  it('places sections in exact requested 8-part sequence in DEFAULT_SECTION_ORDER', () => {
+    expect(DEFAULT_SECTION_ORDER).toEqual([
+      'personal_info',
+      'experience',
+      'projects',
+      'skills',
+      'leadership',
+      'education',
+      'certifications',
+      'languages',
+    ]);
+    expect(DEFAULT_SECTION_ORDER[DEFAULT_SECTION_ORDER.length - 1]).toBe('languages');
+    const lastMeta = SECTION_META[SECTION_META.length - 1];
+    expect(lastMeta.key).toBe('languages');
+    expect(lastMeta.label).toBe('Languages');
+  });
+
+  it('makeSampleResume includes sample languages, leadership, project bullets and location', () => {
+    const sample = makeSampleResume();
+    expect(sample.personal_info.location).toBeTruthy();
+    expect(Array.isArray(sample.languages)).toBe(true);
+    expect(sample.languages.length).toBeGreaterThanOrEqual(2);
+    expect(sample.languages[0].language).toBe('English');
+    expect(sample.languages[0].proficiency).toBe('Professional');
+    expect(sample.languages[1].language).toBe('Malayalam');
+    expect(sample.languages[1].proficiency).toBe('Native');
+
+    expect(Array.isArray(sample.leadership)).toBe(true);
+    expect(sample.leadership.length).toBeGreaterThanOrEqual(1);
+    expect(sample.leadership[0].role).toBe('President');
+    expect(sample.leadership[0].organization).toBe('ACM Student Chapter');
+
+    expect(Array.isArray(sample.projects[0].bullets)).toBe(true);
+    expect(sample.projects[0].bullets.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders all sections including Leadership & Activities in ATSResumeTemplate when present', () => {
+    const sample = makeSampleResume();
+    const { container } = render(<ATSResumeTemplate resume={sample} />);
+
+    // Check that Location is rendered in header
+    expect(container.textContent).toContain(sample.personal_info.location);
+
+    // Check that Headings follow exact 8-part order
+    const headings = container.querySelectorAll('h2');
+    const headingTexts = Array.from(headings).map((h) => h.textContent.trim());
+
+    expect(headingTexts).toEqual([
+      'Professional Summary',
+      'Work Experience',
+      'Projects',
+      'Skills',
+      'Leadership & Activities',
+      'Education',
+      'Certifications',
+      'Languages',
+    ]);
+
+    // Languages must be the last heading in the document
+    expect(headingTexts[headingTexts.length - 1]).toBe('Languages');
+
+    // Content includes formatted language string
+    expect(container.textContent).toContain('English — Professional');
+    expect(container.textContent).toContain('Malayalam — Native');
+
+    // Leadership content is rendered
+    expect(container.textContent).toContain('President — ACM Student Chapter');
+
+    // Project bullets are rendered
+    expect(container.textContent).toContain('Open-source tool that analyzes GitHub repositories');
+  });
+
+  it('hides Leadership & Activities section completely when empty', () => {
+    const sample = makeSampleResume();
+    sample.leadership = []; // empty leadership
+    const { container } = render(<ATSResumeTemplate resume={sample} />);
+
+    const headings = container.querySelectorAll('h2');
+    const headingTexts = Array.from(headings).map((h) => h.textContent.trim());
+
+    // Should not contain 'Leadership & Activities'
+    expect(headingTexts).not.toContain('Leadership & Activities');
+    expect(headingTexts).toEqual([
+      'Professional Summary',
+      'Work Experience',
+      'Projects',
+      'Skills',
+      'Education',
+      'Certifications',
+      'Languages',
+    ]);
+  });
+});
+
+describe('Dark Mode Theme Toggle & Persistence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove('dark');
+  });
+
+  it('renders ThemeToggle and toggles theme on click', () => {
+    render(
+      <ThemeProvider>
+        <ThemeToggle />
+      </ThemeProvider>
+    );
+
+    const toggleBtn = screen.getByRole('button', { name: /Switch to dark mode/i });
+    expect(toggleBtn).toBeInTheDocument();
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+
+    // Click to toggle to dark
+    fireEvent.click(toggleBtn);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(screen.getByRole('button', { name: /Switch to light mode/i })).toBeInTheDocument();
+
+    // Click again to toggle back to light
+    fireEvent.click(screen.getByRole('button', { name: /Switch to light mode/i }));
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(localStorage.getItem('theme')).toBe('light');
+  });
+
+  it('initializes with dark theme if stored in localStorage', () => {
+    localStorage.setItem('theme', 'dark');
+    render(
+      <ThemeProvider>
+        <ThemeToggle />
+      </ThemeProvider>
+    );
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(screen.getByRole('button', { name: /Switch to light mode/i })).toBeInTheDocument();
+  });
+
+  it('resume document remains pure white/black regardless of dark mode on html', () => {
+    document.documentElement.classList.add('dark');
+    const sample = makeSampleResume();
+    const { container } = render(<ATSResumeTemplate resume={sample} />);
+
+    const resumeRoot = container.firstChild;
+    expect(resumeRoot).toHaveStyle({ backgroundColor: '#ffffff', color: '#000000' });
+    const headings = container.querySelectorAll('h2');
+    headings.forEach((h) => {
+      expect(h.className).toContain('text-black');
+    });
+  });
+});
+
+describe('Google Sign-In Integration', () => {
+  it('renders GoogleSignInButton with Google logo and correct text', async () => {
+    const { default: GoogleSignInButton } = await import('../components/auth/GoogleSignInButton');
+    render(<GoogleSignInButton />);
+
+    const button = screen.getByRole('button', { name: /Sign in with Google/i });
+    expect(button).toBeInTheDocument();
+    expect(button.textContent).toContain('Sign in with Google');
+    expect(button.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('renders Google sign-in button and email divider on LoginPage', async () => {
+    const { default: LoginPage } = await import('../pages/LoginPage');
+    const { BrowserRouter } = await import('react-router-dom');
+    const { AuthProvider } = await import('../context/AuthContext');
+
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <LoginPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    // Google Sign-In button present
+    expect(screen.getByRole('button', { name: /Sign in with Google/i })).toBeInTheDocument();
+    // Divider present
+    expect(screen.getByText(/or continue with email/i)).toBeInTheDocument();
+    // Original email/password inputs present
+    expect(screen.getByLabelText(/^Email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument();
+  });
+
+  it('renders Google sign-in button and email divider on SignupPage', async () => {
+    const { default: SignupPage } = await import('../pages/SignupPage');
+    const { BrowserRouter } = await import('react-router-dom');
+    const { AuthProvider } = await import('../context/AuthContext');
+
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <SignupPage />
+        </AuthProvider>
+      </BrowserRouter>
+    );
+
+    // Google Sign-In button present
+    expect(screen.getByRole('button', { name: /Sign in with Google/i })).toBeInTheDocument();
+    // Divider present
+    expect(screen.getByText(/or continue with email/i)).toBeInTheDocument();
+    // Original signup inputs present
+    expect(screen.getByLabelText(/Full name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Password/i)).toBeInTheDocument();
+  });
+});
+

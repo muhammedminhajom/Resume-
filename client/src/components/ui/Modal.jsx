@@ -23,15 +23,15 @@ export default function Modal({ open, onClose, title, subtitle, children, maxWid
         className="absolute inset-0 animate-fade-in bg-surface-900/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`card relative w-full ${maxWidth} animate-slide-up shadow-modal`}>
-        <div className="flex items-start justify-between border-b border-surface-100 px-6 py-4">
+      <div className={`card relative w-full ${maxWidth} animate-slide-up shadow-modal dark:bg-surface-900 dark:border-surface-800`}>
+        <div className="flex items-start justify-between border-b border-surface-100 dark:border-surface-800 px-6 py-4">
           <div>
-            <h2 className="text-base font-semibold text-surface-900">{title}</h2>
-            {subtitle && <p className="mt-0.5 text-sm text-surface-500">{subtitle}</p>}
+            <h2 className="text-base font-semibold text-surface-900 dark:text-surface-100">{title}</h2>
+            {subtitle && <p className="mt-0.5 text-sm text-surface-500 dark:text-surface-400">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="rounded-button p-1.5 text-surface-400 transition-colors hover:bg-surface-100 hover:text-surface-600"
+            className="rounded-button p-1.5 text-surface-400 dark:text-surface-500 transition-colors hover:bg-surface-100 dark:hover:bg-surface-800 hover:text-surface-600 dark:hover:text-surface-300"
             aria-label="Close"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

@@ -13,11 +13,14 @@ import EducationStep from '../components/builder/sections/EducationStep';
 import ExperienceStep from '../components/builder/sections/ExperienceStep';
 import SkillsStep from '../components/builder/sections/SkillsStep';
 import ProjectsStep from '../components/builder/sections/ProjectsStep';
+import LeadershipStep from '../components/builder/sections/LeadershipStep';
 import CertificationsStep from '../components/builder/sections/CertificationsStep';
+import LanguagesStep from '../components/builder/sections/LanguagesStep';
 import TemplateSwitcher from '../components/builder/TemplateSwitcher';
+
 import Toast from '../components/ui/Toast';
 
-const MIN_STEPS = 6;
+const MIN_STEPS = 7;
 
 export default function BuilderPage() {
   const { id } = useParams();
@@ -98,11 +101,13 @@ function BuilderEdition({ id }) {
   }, [resume, resume._id, saving, savedState, navigate, setResume]);
 
   // Clear validation errors when user makes changes
+  const prevResumeRef = useRef(resume);
   useEffect(() => {
-    if (Object.keys(validationErrors).length > 0) {
+    if (Object.keys(validationErrors).length > 0 && prevResumeRef.current !== resume) {
       setValidationErrors({});
     }
-  }, [resume]);
+    prevResumeRef.current = resume;
+  }, [resume, validationErrors]);
 
   function notify(message, type = 'success') {
     setToast({ open: true, type, message });
@@ -115,8 +120,9 @@ function BuilderEdition({ id }) {
     delete plain.created_at;
     delete plain.updated_at;
     delete plain.__v;
-    for (const section of ['education', 'experience', 'projects', 'certifications']) {
+    for (const section of ['education', 'experience', 'projects', 'certifications', 'languages', 'leadership']) {
       plain[section] = (plain[section] || []).map((item) => {
+        if (typeof item === 'string') return item;
         const { _key, ...rest } = item;
         return rest;
       });
@@ -173,21 +179,25 @@ function BuilderEdition({ id }) {
   }
 
   const steps = [
-    { key: 'personal_info', label: 'Personal Info', short: 'Personal', count: resume.personal_info?.name ? 1 : 0 },
-    { key: 'education', label: 'Education', short: 'Education', count: resume.education?.length || 0 },
-    { key: 'experience', label: 'Experience', short: 'Experience', count: resume.experience?.length || 0 },
-    { key: 'skills', label: 'Skills', short: 'Skills', count: resume.skills?.length || 0 },
+    { key: 'personal_info', label: 'Professional Summary', short: 'Summary', count: resume.personal_info?.name ? 1 : 0 },
+    { key: 'experience', label: 'Work Experience', short: 'Experience', count: resume.experience?.length || 0 },
     { key: 'projects', label: 'Projects', short: 'Projects', count: resume.projects?.length || 0 },
+    { key: 'skills', label: 'Skills', short: 'Skills', count: resume.skills?.length || 0 },
+    { key: 'leadership', label: 'Leadership & Activities', short: 'Leadership', count: resume.leadership?.length || 0, optional: true },
+    { key: 'education', label: 'Education', short: 'Education', count: resume.education?.length || 0 },
     { key: 'certifications', label: 'Certifications', short: 'Certifications', count: resume.certifications?.length || 0 },
+    { key: 'languages', label: 'Languages', short: 'Languages', count: resume.languages?.length || 0 },
   ];
 
   const stepComponents = [
     <PersonalInfoStep key="personal_info" errors={validationErrors} />,
-    <EducationStep key="education" errors={validationErrors.education || []} />,
     <ExperienceStep key="experience" errors={validationErrors.experience || []} />,
-    <SkillsStep key="skills" />,
     <ProjectsStep key="projects" errors={validationErrors.projects || []} />,
+    <SkillsStep key="skills" />,
+    <LeadershipStep key="leadership" errors={validationErrors.leadership || []} />,
+    <EducationStep key="education" errors={validationErrors.education || []} />,
     <CertificationsStep key="certifications" errors={validationErrors.certifications || []} />,
+    <LanguagesStep key="languages" />,
   ];
 
   const completedCount = steps.filter((s) => s.count > 0).length;
@@ -213,7 +223,7 @@ function BuilderEdition({ id }) {
   return (
     <div className="no-print flex h-full min-h-[calc(100vh-4rem)] flex-col">
       {/* Sticky header */}
-      <div className="sticky top-0 z-30 -mx-4 -mt-6 mb-5 border-b border-surface-200 bg-white/90 px-4 py-3 backdrop-blur-sm sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="sticky top-0 z-30 -mx-4 -mt-6 mb-5 border-b border-surface-200 dark:border-surface-800 bg-white/90 dark:bg-surface-900/90 px-4 py-3 backdrop-blur-sm sm:px-6 lg:-mx-8 lg:px-8 transition-colors">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/')} className="btn-ghost !p-2" title="Back to Resumes" aria-label="Back to Resumes">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -225,7 +235,7 @@ function BuilderEdition({ id }) {
             <input
               value={resume.title}
               onChange={(e) => setResume((prev) => ({ ...prev, title: e.target.value }))}
-              className="w-full max-w-[240px] rounded-button border border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold text-surface-900 transition-all hover:border-surface-200 hover:bg-surface-50 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+              className="w-full max-w-[240px] rounded-button border border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold text-surface-900 dark:text-surface-100 transition-all hover:border-surface-200 hover:bg-surface-50 dark:hover:border-surface-700 dark:hover:bg-surface-800 focus:border-brand-500 focus:bg-white dark:focus:bg-surface-900 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
               placeholder="Untitled Resume"
               aria-label="Resume title"
             />
@@ -263,18 +273,21 @@ function BuilderEdition({ id }) {
               </svg>
               Save
             </button>
-            <div className="hidden lg:block">
-              <PreviewActions exporting={exporting} onExport={handleExport} />
-            </div>
           </div>
         </div>
       </div>
 
       {/* Mobile edit/preview toggle */}
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-button border border-surface-200 bg-white p-1 lg:hidden">
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-button border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 p-1 lg:hidden">
         <button
           onClick={() => setMobileView('edit')}
-          className={`rounded-button py-2 text-sm font-medium transition-colors ${mobileView === 'edit' ? 'bg-brand-600 text-white' : 'text-surface-500'}`}
+          className={`rounded-button py-2 text-sm font-medium transition-colors ${mobileView === 'edit' ? 'bg-brand-600 text-white' : 'text-surface-500 dark:text-surface-400'}`}
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => setMobileView('preview')}
+          className={`rounded-button py-2 text-sm font-medium transition-colors ${mobileView === 'preview' ? 'bg-brand-600 text-white' : 'text-surface-500 dark:text-surface-400'}`}
         >
           Edit
         </button>
@@ -290,16 +303,18 @@ function BuilderEdition({ id }) {
       <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_520px]">
         {/* Step sidebar */}
         <aside className={`${mobileView === 'preview' ? 'hidden' : 'block'} lg:block`}>
-          <div className="card sticky top-20 p-4">
+          <div className="card sticky top-20 p-4 space-y-4">
             <StepNav
               steps={steps}
               current={currentStep}
               onSelect={setCurrentStep}
               completion={completion}
             />
+
+
           </div>
           <div className="card mt-4 p-4 xl:hidden">
-            <h3 className="section-title mb-3">Template</h3>
+            <h3 className="section-title mb-3">ATS Font</h3>
             <TemplateSwitcher compact />
           </div>
         </aside>
@@ -309,9 +324,9 @@ function BuilderEdition({ id }) {
           <div className="mx-auto max-w-2xl space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <span className="badge badge-gray mb-2">Step {currentStep + 1} of {MIN_STEPS}</span>
-                <h2 className="text-xl font-bold text-surface-900">{steps[currentStep].label}</h2>
-                <p className="mt-0.5 text-sm text-surface-500">
+                <span className="badge badge-gray mb-2">Step {currentStep + 1} of {steps.length}</span>
+                <h2 className="text-xl font-bold text-surface-900 dark:text-surface-100">{steps[currentStep].label}</h2>
+                <p className="mt-0.5 text-sm text-surface-500 dark:text-surface-400">
                   {currentStep === 0
                     ? 'Tell employers how to reach you.'
                     : `Complete your ${steps[currentStep].label.toLowerCase()} section.`}
@@ -343,9 +358,9 @@ function BuilderEdition({ id }) {
                     return;
                   }
                   setValidationErrors({});
-                  setCurrentStep((s) => Math.min(MIN_STEPS - 1, s + 1));
+                  setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
                 }}
-                disabled={currentStep === MIN_STEPS - 1 || !isSectionValid(resume, steps[currentStep].key)}
+                disabled={currentStep === steps.length - 1 || !isSectionValid(resume, steps[currentStep].key)}
                 className="btn-primary disabled:opacity-40"
               >
                 Next
@@ -411,18 +426,7 @@ function BuilderEdition({ id }) {
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9" />
             </svg>
-          </button>
-          <button onClick={handleExport} disabled={exporting} className="btn-primary" title="Download PDF">
-            {exporting ? (
-              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-            )}
+            Save
           </button>
         </div>
       </div>
@@ -460,24 +464,4 @@ function SaveIndicator({ state }) {
     );
   }
   return null;
-}
-
-function PreviewActions({ exporting, onExport }) {
-  return (
-    <div className="flex items-center gap-2">
-      <button onClick={onExport} disabled={exporting} className="btn-primary">
-        {exporting ? (
-          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-        )}
-        Download PDF
-      </button>
-    </div>
-  );
 }

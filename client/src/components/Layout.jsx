@@ -1,125 +1,178 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import {
+  LayoutGrid,
+  FileText,
+  FilePlus2,
+  ShieldCheck,
+  Target,
+  LogOut,
+  Menu,
+  X,
+  HelpCircle,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ui/ThemeToggle';
+import Footer from './common/Footer';
 
 const navItems = [
   {
     to: '/',
     label: 'Dashboard',
-    icon: (
-      <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-      </svg>
-    ),
+    icon: LayoutGrid,
     exact: true,
-  },
-  {
-    to: '/resumes',
-    label: 'My Resumes',
-    icon: (
-      <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-      </svg>
-    ),
-    exact: false,
   },
   {
     to: '/builder',
     label: 'Create Resume',
-    icon: (
-      <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-      </svg>
-    ),
+    icon: FilePlus2,
+    exact: false,
+  },
+  {
+    to: '/ats-checker',
+    label: 'ATS Checker',
+    icon: ShieldCheck,
+    exact: false,
+  },
+  {
+    to: '/job-match',
+    label: 'Job Match',
+    icon: Target,
     exact: false,
   },
 ];
 
-function SidebarNav({ onNavigate }) {
+function NavItem({ item, onClick }) {
   const location = useLocation();
+  const isActive = item.exact
+    ? location.pathname === item.to
+    : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+
+  const Icon = item.icon;
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 px-3 py-4" aria-label="Sidebar navigation">
-      {navItems.map((item) => {
-        const isActive = item.exact
-          ? location.pathname === item.to
-          : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
-
-        return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.exact}
-            onClick={onNavigate}
-            aria-current={isActive ? 'page' : undefined}
-            className={`group flex items-center gap-3 rounded-button px-3 py-2.5 text-[13px] font-medium transition-all duration-150 ${
-              isActive
-                ? 'bg-brand-50 text-brand-700'
-                : 'text-surface-500 hover:bg-surface-100 hover:text-surface-700'
-            }`}
-          >
-            <span className={isActive ? 'text-brand-600' : 'text-surface-400 group-hover:text-surface-600'}>{item.icon}</span>
-            {item.label}
-          </NavLink>
-        );
-      })}
-    </nav>
+    <NavLink
+      to={item.to}
+      end={item.exact}
+      onClick={onClick}
+      aria-current={isActive ? 'page' : undefined}
+      className={`group flex items-center gap-3 rounded-lg px-4 py-3 text-[13.5px] font-medium transition-all duration-150 ${
+        isActive
+          ? 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 font-semibold'
+          : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800 hover:text-surface-900 dark:hover:text-surface-100'
+      }`}
+    >
+      <Icon
+        size={20}
+        strokeWidth={isActive ? 2 : 1.75}
+        className={isActive ? 'text-brand-600 dark:text-brand-400' : 'text-surface-400 dark:text-surface-500 group-hover:text-surface-700 dark:group-hover:text-surface-300 transition-colors'}
+      />
+      <span>{item.label}</span>
+    </NavLink>
   );
 }
 
-function UserCard({ user, onLogout, compact = false }) {
+function LogoBlock() {
   return (
-    <div className={`flex items-center gap-3 ${compact ? '' : 'rounded-button px-3 py-2.5'}`}>
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
+    <Link to="/" className="flex items-center gap-3" aria-label="Resume Builder home">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 shadow-sm">
+        <FileText size={18} className="text-white" strokeWidth={1.75} />
+      </span>
+      <span className="text-[15px] font-bold text-brand-700 dark:text-brand-400 tracking-tight leading-none">
+        Resume<br />
+        <span className="font-semibold text-surface-700 dark:text-surface-300">Builder</span>
+      </span>
+    </Link>
+  );
+}
+
+function UserCard({ user, onLogout }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg px-3 py-2.5">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-white shadow-sm">
         {user?.name?.charAt(0)?.toUpperCase() || 'U'}
       </div>
-      {!compact && (
-        <>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-medium text-surface-800">{user?.name || 'User'}</p>
-            <p className="truncate text-[11px] text-surface-400">{user?.email || ''}</p>
-          </div>
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              className="rounded-button p-1.5 text-surface-400 transition-colors hover:bg-surface-100 hover:text-surface-600"
-              title="Log out"
-              aria-label="Log out"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-            </button>
-          )}
-        </>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-semibold text-surface-800 dark:text-surface-200">{user?.name || 'User'}</p>
+        <p className="truncate text-[11px] text-surface-400 dark:text-surface-500">{user?.email || ''}</p>
+      </div>
+      {onLogout && (
+        <button
+          onClick={onLogout}
+          className="rounded-lg p-1.5 text-surface-400 hover:bg-surface-100 hover:text-rose-500 dark:text-surface-500 dark:hover:bg-surface-800 dark:hover:text-rose-400 transition-colors"
+          title="Log out"
+          aria-label="Log out"
+        >
+          <LogOut size={16} strokeWidth={1.75} />
+        </button>
       )}
     </div>
   );
 }
 
-export default function Layout() {
+function Sidebar({ onNavigate }) {
   const { user, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-50">
-      {/* Desktop sidebar */}
-      <aside className="no-print hidden w-[260px] shrink-0 flex-col border-r border-surface-200 bg-white lg:flex">
-        <div className="flex h-16 items-center gap-2.5 border-b border-surface-100 px-5">
-          <Link to="/" className="flex items-center gap-2.5" aria-label="Resume Builder home">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
-              <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
-            </span>
-            <span className="text-[15px] font-bold text-surface-900">Resume Builder</span>
-          </Link>
-        </div>
+    <div className="flex h-full flex-col bg-white dark:bg-surface-900 border-r border-surface-200 dark:border-surface-800 transition-colors">
+      {/* Logo block */}
+      <div className="flex h-16 items-center px-5 border-b border-surface-100 dark:border-surface-800">
+        <LogoBlock />
+      </div>
 
-        <SidebarNav />
+      {/* Nav section label */}
+      <div className="px-5 pt-5 pb-1">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-surface-400 dark:text-surface-500">
+          Navigation
+        </span>
+      </div>
 
-        <div className="border-t border-surface-100 p-3">
-          <UserCard user={user} onLogout={logout} />
+      {/* Nav items */}
+      <nav className="flex flex-col gap-0.5 px-3 py-2 flex-1" aria-label="Sidebar navigation">
+        {navItems.map((item) => (
+          <NavItem key={item.to} item={item} onClick={onNavigate} />
+        ))}
+      </nav>
+
+      {/* Support link */}
+      <div className="px-3 pb-2 border-t border-surface-100 dark:border-surface-800 pt-2">
+        <a
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=supportbuilderresume@gmail.com&su=Resume%20Builder%20Support"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-3 rounded-lg px-4 py-2.5 text-[13px] font-medium text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800 hover:text-surface-900 dark:hover:text-surface-100 transition-all duration-150"
+          title="Contact & Support (Opens Gmail)"
+        >
+          <HelpCircle
+            size={18}
+            strokeWidth={1.75}
+            className="text-surface-400 dark:text-surface-500 group-hover:text-surface-700 dark:group-hover:text-surface-300 transition-colors"
+          />
+          <span>Contact &amp; Support</span>
+        </a>
+      </div>
+
+      {/* User footer */}
+      <div className="border-t border-surface-100 dark:border-surface-800 p-3">
+        <UserCard user={user} onLogout={logout} />
+      </div>
+    </div>
+  );
+}
+
+export default function Layout() {
+  const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  const isBuilder = location.pathname.startsWith('/builder');
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-100 transition-colors duration-200">
+      {/* Desktop sidebar — fixed 240px */}
+      <aside className="no-print hidden w-[240px] shrink-0 lg:flex">
+        <div className="w-full">
+          <Sidebar />
         </div>
       </aside>
 
@@ -127,38 +180,23 @@ export default function Layout() {
       {sidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-surface-900/25 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-surface-900/40 dark:bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
-          <aside className="fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-surface-200 bg-white shadow-elevated lg:hidden animate-fade-in">
-            <div className="flex h-16 items-center justify-between border-b border-surface-100 px-5">
-              <Link to="/" className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
-                  <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
-                </span>
-                <span className="text-[15px] font-bold text-surface-900">Resume Builder</span>
-              </Link>
+          <aside className="fixed inset-y-0 left-0 z-50 w-[240px] lg:hidden shadow-elevated animate-fade-in">
+            {/* Close button overlay */}
+            <div className="absolute -right-10 top-4">
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="rounded-button p-2 text-surface-400 hover:text-surface-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-surface-800 shadow-card text-surface-500 dark:text-surface-300"
                 aria-label="Close menu"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X size={16} />
               </button>
             </div>
-            <SidebarNav onNavigate={() => setSidebarOpen(false)} />
-            <div className="border-t border-surface-100 p-3">
-              <button onClick={logout} className="flex w-full items-center gap-3 rounded-button px-3 py-2.5 text-[13px] font-medium text-surface-500 hover:bg-surface-100">
-                <svg className="h-[18px] w-[18px] text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                </svg>
-                Log out
-              </button>
+            <div className="h-full">
+              <Sidebar onNavigate={() => setSidebarOpen(false)} />
             </div>
           </aside>
         </>
@@ -167,39 +205,41 @@ export default function Layout() {
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="no-print flex h-16 shrink-0 items-center justify-between border-b border-surface-200 bg-white px-4 lg:px-6">
+        <header className="no-print flex h-16 shrink-0 items-center justify-between border-b border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 px-4 lg:px-6 transition-colors duration-200">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-button p-2 text-surface-500 hover:bg-surface-100 lg:hidden"
+              className="rounded-lg p-2 text-surface-500 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800 lg:hidden"
               aria-label="Open menu"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
+              <Menu size={20} strokeWidth={1.75} />
             </button>
+            {/* Mobile logo */}
             <Link to="/" className="flex items-center gap-2.5 lg:hidden">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600">
-                <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
+                <FileText size={14} className="text-white" strokeWidth={1.75} />
               </span>
-              <span className="text-[13px] font-bold text-surface-900">Resume Builder</span>
+              <span className="text-[13px] font-bold text-brand-700 dark:text-brand-400">Resume Builder</span>
             </Link>
           </div>
+
+          {/* Right: theme toggle + user avatar */}
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-surface-500 sm:inline">{user?.name}</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
+            <ThemeToggle />
+            <div className="h-5 w-px bg-surface-200 dark:bg-surface-800" />
+            <span className="hidden text-sm text-surface-600 dark:text-surface-300 sm:inline font-medium">{user?.name}</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-white shadow-sm">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <main className="flex-1 overflow-y-auto flex flex-col justify-between">
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex-1">
             <Outlet />
           </div>
+          {!isBuilder && <Footer />}
         </main>
       </div>
     </div>

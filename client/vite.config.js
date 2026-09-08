@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Vite configuration with Tailwind CSS dark mode support
 export default defineConfig({
   plugins: [react()],
   server: {

@@ -35,7 +35,7 @@ export default function PersonalInfoStep({ errors = {} }) {
       </FieldGrid>
 
       <FieldGrid>
-        <Input label="Location" value={p.location} onChange={(v) => set('location', v)} placeholder="Austin, TX" />
+        <Input label="Location" value={p.location} onChange={(v) => set('location', v)} placeholder="City, Country (e.g. Austin, TX)" helper="City, Country or City, State" />
       </FieldGrid>
 
       <TagInput

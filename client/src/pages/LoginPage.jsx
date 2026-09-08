@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ui/ThemeToggle';
+import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 export function Logo({ dark = false }) {
   return (
@@ -10,7 +12,7 @@ export function Logo({ dark = false }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
         </svg>
       </span>
-      <span className={`text-lg font-bold ${dark ? 'text-white' : 'text-surface-900'}`}>Resume Builder</span>
+      <span className={`text-lg font-bold ${dark ? 'text-white' : 'text-surface-900 dark:text-surface-100'}`}>Resume Builder</span>
     </Link>
   );
 }
@@ -82,33 +84,65 @@ function MarketingPanel() {
         </div>
       </div>
 
-      <p className="relative text-xs text-surface-600">&copy; {new Date().getFullYear()} Resume Builder. All rights reserved.</p>
+      <div className="relative flex items-center justify-between text-xs text-surface-400">
+        <p>&copy; {new Date().getFullYear()} Resume Builder</p>
+        <div className="flex items-center gap-3">
+          <Link to="/privacy-policy" className="hover:text-white transition-colors underline">Privacy Policy</Link>
+          <Link to="/terms-of-service" className="hover:text-white transition-colors underline">Terms of Service</Link>
+          <a
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=supportbuilderresume@gmail.com&su=Resume%20Builder%20Support"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors underline"
+          >
+            Contact &amp; Support
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
 
 export function AuthLayout({ title, subtitle, children, footer }) {
   return (
-    <div className="flex min-h-screen bg-surface-50">
+    <div className="relative flex min-h-screen bg-surface-50 dark:bg-surface-950">
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
       <MarketingPanel />
 
       {/* Right auth card */}
-      <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <Logo />
           </div>
 
-          <div className="card animate-slide-up rounded-modal p-8 shadow-elevated sm:p-10">
+          <div className="card animate-slide-up rounded-modal p-8 shadow-elevated sm:p-10 dark:bg-surface-900 dark:border-surface-800">
             <div className="mb-8">
               <span className="badge badge-brand mb-4">Professional resume builder</span>
-              <h1 className="text-2xl font-bold tracking-tight text-surface-900">{title}</h1>
-              {subtitle && <p className="mt-2 text-sm leading-relaxed text-surface-500">{subtitle}</p>}
+              <h1 className="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-100">{title}</h1>
+              {subtitle && <p className="mt-2 text-sm leading-relaxed text-surface-500 dark:text-surface-400">{subtitle}</p>}
             </div>
             {children}
           </div>
 
           {footer && <div className="mt-6">{footer}</div>}
+
+          <div className="mt-6 text-center text-xs text-surface-500 dark:text-surface-400">
+            <Link to="/privacy-policy" className="hover:text-brand-600 dark:hover:text-brand-400 underline">Privacy Policy</Link>
+            <span className="mx-2">&bull;</span>
+            <Link to="/terms-of-service" className="hover:text-brand-600 dark:hover:text-brand-400 underline">Terms of Service</Link>
+            <span className="mx-2">&bull;</span>
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=supportbuilderresume@gmail.com&su=Resume%20Builder%20Support"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand-600 dark:hover:text-brand-400 underline"
+            >
+              Contact &amp; Support
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -142,26 +176,67 @@ function ShowPasswordToggle({ show, onToggle }) {
 export function ErrorAlert({ message }) {
   if (!message) return null;
   return (
-    <div className="flex items-start gap-2.5 rounded-input border border-red-200 bg-red-50 px-3.5 py-3 animate-fade-in">
-      <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+    <div className="flex items-start gap-2.5 rounded-input border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/40 px-3.5 py-3 animate-fade-in">
+      <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
       </svg>
-      <p className="text-sm text-red-700">{message}</p>
+      <p className="text-sm text-red-700 dark:text-red-300">{message}</p>
     </div>
   );
 }
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginWithToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const oauthError = params.get('error');
+      return oauthError ? decodeURIComponent(oauthError) : '';
+    } catch {
+      return '';
+    }
+  });
+  const [busy, setBusy] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return Boolean(params.get('token'));
+    } catch {
+      return false;
+    }
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const oauthError = params.get('error');
+      const oauthToken = params.get('token');
+
+      if (oauthError) {
+        window.history.replaceState({}, document.title, location.pathname);
+      } else if (oauthToken) {
+        window.history.replaceState({}, document.title, location.pathname);
+        loginWithToken(oauthToken)
+          .then(() => {
+            navigate(from, { replace: true });
+          })
+          .catch((err) => {
+            setError(err.message || 'Google sign-in failed.');
+          })
+          .finally(() => {
+            setBusy(false);
+          });
+      }
+    } catch {
+      // ignore query parsing errors
+    }
+  }, [location.pathname, loginWithToken, navigate, from]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -184,16 +259,27 @@ export default function LoginPage() {
       title="Welcome back"
       subtitle="Sign in to access your resumes and continue where you left off."
       footer={
-        <p className="text-center text-sm text-surface-500">
+        <p className="text-center text-sm text-surface-500 dark:text-surface-400">
           Don&apos;t have an account?{' '}
-          <Link to="/signup" className="font-semibold text-brand-600 transition-colors hover:text-brand-700">
+          <Link to="/signup" className="font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors">
             Create account
           </Link>
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <div className="space-y-5">
         <ErrorAlert message={error} />
+
+        <GoogleSignInButton />
+
+        <div className="relative flex items-center justify-center">
+          <div className="w-full border-t border-surface-200 dark:border-surface-800" />
+          <span className="absolute bg-white px-3 text-xs font-medium uppercase tracking-wider text-surface-400 dark:bg-surface-900">
+            or continue with email
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
         <div>
           <label htmlFor="login-email" className="label-text">Email</label>
@@ -211,8 +297,8 @@ export default function LoginPage() {
 
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="login-password" className="mb-0 text-sm font-medium text-surface-700">Password</label>
-            <Link to="/forgot-password" className="text-xs font-semibold text-brand-600 transition-colors hover:text-brand-700">
+            <label htmlFor="login-password" className="mb-0 text-sm font-medium text-surface-700 dark:text-surface-300">Password</label>
+            <Link to="/forgot-password" className="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors">
               Forgot password?
             </Link>
           </div>
@@ -236,9 +322,9 @@ export default function LoginPage() {
             type="checkbox"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-surface-300 text-brand-600 focus:ring-brand-500/20"
+            className="h-4 w-4 rounded border-surface-300 dark:border-surface-700 dark:bg-surface-800 text-brand-600 focus:ring-brand-500/20"
           />
-          <span className="text-sm text-surface-600">Remember me</span>
+          <span className="text-sm text-surface-600 dark:text-surface-400">Remember me</span>
         </label>
 
         <button type="submit" disabled={busy} className="btn-primary w-full">
@@ -260,6 +346,7 @@ export default function LoginPage() {
           )}
         </button>
       </form>
+      </div>
     </AuthLayout>
   );
 }

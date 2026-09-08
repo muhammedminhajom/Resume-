@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, downloadBlob } from '../api/client';
 import { makeSampleResume } from '../lib/resume';
 import ResumeCard from '../components/ResumeCard';
 import EmptyState from '../components/ui/EmptyState';
 import { SkeletonCard } from '../components/ui/Skeleton';
+import Modal from '../components/ui/Modal';
 
 function formatRelative(value) {
   if (!value) return 'Never';
@@ -20,13 +21,11 @@ function formatRelative(value) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const TEMPLATE_LABELS = { modern: 'Modern', classic: 'Classic', minimal: 'Minimal' };
-
 function StatCard({ label, value, icon, accent = 'brand' }) {
   const accentMap = {
-    brand: 'bg-brand-50 text-brand-600',
-    green: 'bg-emerald-50 text-emerald-600',
-    slate: 'bg-surface-100 text-surface-600',
+    brand: 'bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-400',
+    green: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
+    slate: 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-400',
   };
   return (
     <div className="card flex items-center gap-4 p-4 sm:p-5">
@@ -34,8 +33,8 @@ function StatCard({ label, value, icon, accent = 'brand' }) {
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold tracking-tight text-surface-900">{value}</p>
-        <p className="truncate text-sm text-surface-500">{label}</p>
+        <p className="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-100">{value}</p>
+        <p className="truncate text-sm text-surface-500 dark:text-surface-400">{label}</p>
       </div>
     </div>
   );
@@ -46,33 +45,80 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [renamingResume, setRenamingResume] = useState(null);
+  const [renameTitle, setRenameTitle] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
+  const [deletingResume, setDeletingResume] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function load() {
-    setLoading(true);
-    setError('');
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await api.get('/resumes');
+        if (mounted) setResumes(data.resumes);
+      } catch (err) {
+        if (mounted) setError(err.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  async function handleRenameSubmit(e) {
+    e?.preventDefault();
+    if (!renamingResume) return;
+    const trimmed = renameTitle.trim();
+    if (!trimmed) return;
+    setRenameLoading(true);
     try {
-      const data = await api.get('/resumes');
-      setResumes(data.resumes);
+      await api.put(`/resumes/${renamingResume._id}`, { title: trimmed });
+      setResumes((prev) =>
+        prev.map((r) => (r._id === renamingResume._id ? { ...r, title: trimmed } : r))
+      );
+      setRenamingResume(null);
     } catch (err) {
-      setError(err.message);
+      alert(err.message || 'Failed to rename resume.');
     } finally {
-      setLoading(false);
+      setRenameLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-  }, []);
-
-  async function handleDelete(id) {
-    const resume = resumes.find((r) => r._id === id);
-    if (!window.confirm(`Delete "${resume?.title || 'resume'}"? This cannot be undone.`)) return;
+  async function handleConfirmDelete() {
+    if (!deletingResume) return;
+    setDeleteLoading(true);
     try {
-      await api.delete(`/resumes/${id}`);
-      setResumes((prev) => prev.filter((r) => r._id !== id));
+      await api.delete(`/resumes/${deletingResume._id}`);
+      setResumes((prev) => prev.filter((r) => r._id !== deletingResume._id));
+      setDeletingResume(null);
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Failed to delete resume.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
+  async function handleDownload(resume) {
+    try {
+      const blob = await api.exportPdf(resume._id);
+      const base =
+        (resume.title || 'resume')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 60) || 'resume';
+      downloadBlob(blob, `${base}.pdf`);
+    } catch (err) {
+      alert(err.message || 'Failed to download PDF.');
     }
   }
 
@@ -122,8 +168,8 @@ export default function DashboardPage() {
     <div className="animate-fade-in">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-surface-900">My Resumes</h1>
-        <p className="mt-1 text-sm text-surface-500">Create and manage all your resumes in one place.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-surface-900 dark:text-surface-100">My Resumes</h1>
+        <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">Create and manage all your resumes in one place.</p>
       </div>
 
       {/* Stats row */}
@@ -246,13 +292,88 @@ export default function DashboardPage() {
                 key={r._id}
                 resume={r}
                 onEdit={() => navigate(`/builder/${r._id}`)}
-                onDelete={() => handleDelete(r._id)}
+                onRename={(resume) => {
+                  setRenamingResume(resume);
+                  setRenameTitle(resume.title || '');
+                }}
+                onDelete={(resume) => setDeletingResume(resume)}
                 onDuplicate={() => handleDuplicate(r)}
+                onDownload={() => handleDownload(r)}
               />
             ))}
           </div>
         </div>
       )}
+
+      {/* Rename Modal */}
+      <Modal
+        open={Boolean(renamingResume)}
+        onClose={() => setRenamingResume(null)}
+        title="Rename Resume"
+        subtitle="Give your resume a distinct and memorable title."
+      >
+        <form onSubmit={handleRenameSubmit} className="space-y-4">
+          <div>
+            <label className="label-text">Resume Title</label>
+            <input
+              type="text"
+              value={renameTitle}
+              onChange={(e) => setRenameTitle(e.target.value)}
+              className="input-field"
+              placeholder="e.g. Software Engineer 2026"
+              autoFocus
+            />
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setRenamingResume(null)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={renameLoading || !renameTitle.trim()}
+              className="btn-primary"
+            >
+              {renameLoading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={Boolean(deletingResume)}
+        onClose={() => setDeletingResume(null)}
+        title="Delete Resume"
+        subtitle="This action cannot be undone."
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-surface-600">
+            Are you sure you want to permanently delete{' '}
+            <strong className="text-surface-900">&quot;{deletingResume?.title || 'this resume'}&quot;</strong>?
+          </p>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setDeletingResume(null)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deleteLoading}
+              className="btn-danger"
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete Permanently'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

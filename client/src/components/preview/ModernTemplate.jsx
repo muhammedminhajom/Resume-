@@ -98,21 +98,63 @@ export default function ModernTemplate({ resume }) {
       );
     }
 
+    if (key === 'leadership') {
+      const entries = (resume.leadership || []).filter(
+        (l) => l.role?.trim() || l.organization?.trim() || l.bullets?.some((b) => b?.trim())
+      );
+      if (!entries.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Leadership & Activities</SectionTitle>
+          {entries.map((item, i) => (
+            <div key={i} className="mb-3 last:mb-0">
+              <Row
+                left={[item.role, item.organization].filter(Boolean).join(' — ')}
+                right={[item.start_date, item.end_date].filter(Boolean).join(' – ')}
+              />
+              {item.bullets?.length > 0 && (
+                <ul className="mt-1 space-y-0.5 pl-4 text-[12px] leading-[1.5] text-surface-700">
+                  {item.bullets.filter(Boolean).map((b, j) => (
+                    <li key={j} className="relative list-none pl-2">
+                      <span className="absolute left-[-9px] text-brand-500">•</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      );
+    }
+
     if (key === 'projects') {
       return (
         <section key={key}>
           <SectionTitle>Projects</SectionTitle>
-          {resume.projects.map((proj, i) => (
-            <div key={i} className="mb-2 last:mb-0">
-              <Row left={proj.title} right={proj.link} />
-              {proj.description && (
-                <p className="text-[12px] leading-relaxed text-surface-700">{proj.description}</p>
-              )}
-              {proj.tech?.length > 0 && (
-                <p className="mt-0.5 text-[11px] text-surface-500">{proj.tech.join(', ')}</p>
-              )}
-            </div>
-          ))}
+          {resume.projects.map((proj, i) => {
+            const hasBullets = proj.bullets && proj.bullets.length > 0 && proj.bullets.some((b) => b?.trim());
+            return (
+              <div key={i} className="mb-2 last:mb-0">
+                <Row left={proj.title} right={proj.link} />
+                {hasBullets ? (
+                  <ul className="mt-1 space-y-0.5 pl-4 text-[12px] leading-[1.5] text-surface-700">
+                    {proj.bullets.filter(Boolean).map((b, j) => (
+                      <li key={j} className="relative list-none pl-2">
+                        <span className="absolute left-[-9px] text-brand-500">•</span>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                ) : proj.description ? (
+                  <p className="text-[12px] leading-relaxed text-surface-700">{proj.description}</p>
+                ) : null}
+                {proj.tech?.length > 0 && (
+                  <p className="mt-0.5 text-[11px] text-surface-500">{proj.tech.join(', ')}</p>
+                )}
+              </div>
+            );
+          })}
         </section>
       );
     }
@@ -127,6 +169,30 @@ export default function ModernTemplate({ resume }) {
               {c.issuer && <p className="text-[11.5px] text-surface-500">{c.issuer}</p>}
             </div>
           ))}
+        </section>
+      );
+    }
+
+    if (key === 'languages') {
+      if (!resume.languages?.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Languages</SectionTitle>
+          <div className="flex flex-wrap gap-1.5">
+            {resume.languages.map((l, i) => {
+              const lang = typeof l === 'string' ? l : l.language;
+              const prof = typeof l === 'string' ? '' : l.proficiency;
+              return (
+                <span
+                  key={i}
+                  className="rounded-full border border-surface-200 bg-surface-50 px-2.5 py-1 text-[11.5px] font-medium text-surface-700"
+                >
+                  <span className="font-semibold">{lang}</span>
+                  {prof && <span className="text-surface-500 font-normal"> — {prof}</span>}
+                </span>
+              );
+            })}
+          </div>
         </section>
       );
     }

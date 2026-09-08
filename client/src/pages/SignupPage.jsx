@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout, ErrorAlert } from './LoginPage';
+import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 function passwordStrength(pw) {
   let score = 0;
@@ -23,15 +24,57 @@ const STRENGTH_COLORS = [
 ];
 
 export default function SignupPage() {
-  const { signup } = useAuth();
+  const { signup, loginWithToken } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const oauthError = params.get('error');
+      return oauthError ? decodeURIComponent(oauthError) : '';
+    } catch {
+      return '';
+    }
+  });
+  const [busy, setBusy] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return Boolean(params.get('token'));
+    } catch {
+      return false;
+    }
+  });
   const [showPassword, setShowPassword] = useState(false);
 
   const strength = useMemo(() => passwordStrength(form.password), [form.password]);
   const strengthMeta = STRENGTH_COLORS[strength];
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const oauthError = params.get('error');
+      const oauthToken = params.get('token');
+
+      if (oauthError) {
+        window.history.replaceState({}, document.title, location.pathname);
+      } else if (oauthToken) {
+        window.history.replaceState({}, document.title, location.pathname);
+        loginWithToken(oauthToken)
+          .then(() => {
+            navigate('/', { replace: true });
+          })
+          .catch((err) => {
+            setError(err.message || 'Google sign-in failed.');
+          })
+          .finally(() => {
+            setBusy(false);
+          });
+      }
+    } catch {
+      // ignore query parsing errors
+    }
+  }, [location.pathname, loginWithToken, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -72,8 +115,19 @@ export default function SignupPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <div className="space-y-5">
         <ErrorAlert message={error} />
+
+        <GoogleSignInButton text="Sign in with Google" />
+
+        <div className="relative flex items-center justify-center">
+          <div className="w-full border-t border-surface-200 dark:border-surface-800" />
+          <span className="absolute bg-white px-3 text-xs font-medium uppercase tracking-wider text-surface-400 dark:bg-surface-900">
+            or continue with email
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
         <div>
           <label htmlFor="signup-name" className="label-text">Full name</label>
@@ -183,6 +237,7 @@ export default function SignupPage() {
           )}
         </button>
       </form>
+      </div>
     </AuthLayout>
   );
 }

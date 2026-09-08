@@ -96,24 +96,64 @@ export default function ClassicTemplate({ resume }) {
       );
     }
 
+    if (key === 'leadership') {
+      const entries = (resume.leadership || []).filter(
+        (l) => l.role?.trim() || l.organization?.trim() || l.bullets?.some((b) => b?.trim())
+      );
+      if (!entries.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Leadership & Activities</SectionTitle>
+          {entries.map((item, i) => (
+            <div key={i} className="mb-3 last:mb-0">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-serif text-[13.5px] font-bold">
+                  {[item.role, item.organization].filter(Boolean).join(', ')}
+                </span>
+                <span className="shrink-0 font-serif text-[11.5px] italic text-surface-600">
+                  {[item.start_date, item.end_date].filter(Boolean).join(' – ')}
+                </span>
+              </div>
+              {item.bullets?.length > 0 && (
+                <ul className="mt-1 space-y-0.5 pl-5 font-serif text-[12px] leading-[1.5] text-surface-800 [list-style:disc]">
+                  {item.bullets.filter(Boolean).map((b, j) => (
+                    <li key={j}>{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      );
+    }
+
     if (key === 'projects') {
       return (
         <section key={key}>
           <SectionTitle>Projects</SectionTitle>
-          {resume.projects.map((proj, i) => (
-            <div key={i} className="mb-2 last:mb-0">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-serif text-[13.5px] font-bold">{proj.title}</span>
-                {proj.link && <span className="font-serif text-[11.5px] italic text-surface-600">{proj.link}</span>}
+          {resume.projects.map((proj, i) => {
+            const hasBullets = proj.bullets && proj.bullets.length > 0 && proj.bullets.some((b) => b?.trim());
+            return (
+              <div key={i} className="mb-2 last:mb-0">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-serif text-[13.5px] font-bold">{proj.title}</span>
+                  {proj.link && <span className="font-serif text-[11.5px] italic text-surface-600">{proj.link}</span>}
+                </div>
+                {hasBullets ? (
+                  <ul className="mt-1 space-y-0.5 pl-5 font-serif text-[12px] leading-[1.5] text-surface-800 [list-style:disc]">
+                    {proj.bullets.filter(Boolean).map((b, j) => (
+                      <li key={j}>{b}</li>
+                    ))}
+                  </ul>
+                ) : proj.description ? (
+                  <p className="font-serif text-[12px] leading-relaxed text-surface-800">{proj.description}</p>
+                ) : null}
+                {proj.tech?.length > 0 && (
+                  <p className="mt-0.5 font-serif text-[11.5px] italic text-surface-600">{proj.tech.join(', ')}</p>
+                )}
               </div>
-              {proj.description && (
-                <p className="font-serif text-[12px] leading-relaxed text-surface-800">{proj.description}</p>
-              )}
-              {proj.tech?.length > 0 && (
-                <p className="mt-0.5 font-serif text-[11.5px] italic text-surface-600">{proj.tech.join(', ')}</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </section>
       );
     }
@@ -131,6 +171,27 @@ export default function ClassicTemplate({ resume }) {
               {c.issuer && <p className="font-serif text-[12px] italic text-surface-700">{c.issuer}</p>}
             </div>
           ))}
+        </section>
+      );
+    }
+
+    if (key === 'languages') {
+      if (!resume.languages?.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Languages</SectionTitle>
+          <div className="flex flex-wrap gap-1.5">
+            {resume.languages.map((l, i) => {
+              const lang = typeof l === 'string' ? l : l.language;
+              const prof = typeof l === 'string' ? '' : l.proficiency;
+              return (
+                <span key={i} className="border border-surface-400 px-2.5 py-0.5 font-serif text-[12px] text-surface-800">
+                  <span className="font-bold">{lang}</span>
+                  {prof && <span className="italic"> — {prof}</span>}
+                </span>
+              );
+            })}
+          </div>
         </section>
       );
     }

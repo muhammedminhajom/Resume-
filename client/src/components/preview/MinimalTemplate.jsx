@@ -97,24 +97,64 @@ export default function MinimalTemplate({ resume }) {
       );
     }
 
+    if (key === 'leadership') {
+      const entries = (resume.leadership || []).filter(
+        (l) => l.role?.trim() || l.organization?.trim() || l.bullets?.some((b) => b?.trim())
+      );
+      if (!entries.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Leadership & Activities</SectionTitle>
+          {entries.map((item, i) => (
+            <div key={i} className="mt-2.5">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[13px] font-semibold text-surface-900">
+                  {[item.role, item.organization].filter(Boolean).join(', ')}
+                </span>
+                <span className="shrink-0 text-[10.5px] text-surface-400">
+                  {[item.start_date, item.end_date].filter(Boolean).join(' – ')}
+                </span>
+              </div>
+              {item.bullets?.length > 0 && (
+                <ul className="mt-1 space-y-0.5 pl-4 text-[11.5px] leading-relaxed text-surface-600 [list-style:disc]">
+                  {item.bullets.filter(Boolean).map((b, j) => (
+                    <li key={j}>{b}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      );
+    }
+
     if (key === 'projects') {
       return (
         <section key={key}>
           <SectionTitle>Projects</SectionTitle>
-          {resume.projects.map((proj, i) => (
-            <div key={i} className="mt-2.5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-[13px] font-semibold text-surface-900">{proj.title}</span>
-                {proj.link && <span className="text-[10.5px] text-surface-400">{proj.link}</span>}
+          {resume.projects.map((proj, i) => {
+            const hasBullets = proj.bullets && proj.bullets.length > 0 && proj.bullets.some((b) => b?.trim());
+            return (
+              <div key={i} className="mt-2.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-[13px] font-semibold text-surface-900">{proj.title}</span>
+                  {proj.link && <span className="text-[10.5px] text-surface-400">{proj.link}</span>}
+                </div>
+                {hasBullets ? (
+                  <ul className="mt-1 space-y-0.5 pl-4 text-[11.5px] leading-relaxed text-surface-600 [list-style:disc]">
+                    {proj.bullets.filter(Boolean).map((b, j) => (
+                      <li key={j}>{b}</li>
+                    ))}
+                  </ul>
+                ) : proj.description ? (
+                  <p className="text-[11.5px] leading-relaxed text-surface-600">{proj.description}</p>
+                ) : null}
+                {proj.tech?.length > 0 && (
+                  <p className="mt-0.5 text-[10.5px] text-surface-400">{proj.tech.join(', ')}</p>
+                )}
               </div>
-              {proj.description && (
-                <p className="text-[11.5px] leading-relaxed text-surface-600">{proj.description}</p>
-              )}
-              {proj.tech?.length > 0 && (
-                <p className="mt-0.5 text-[10.5px] text-surface-400">{proj.tech.join(', ')}</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </section>
       );
     }
@@ -132,6 +172,24 @@ export default function MinimalTemplate({ resume }) {
               {c.issuer && <p className="text-[11px] text-surface-500">{c.issuer}</p>}
             </div>
           ))}
+        </section>
+      );
+    }
+
+    if (key === 'languages') {
+      if (!resume.languages?.length) return null;
+      return (
+        <section key={key}>
+          <SectionTitle>Languages</SectionTitle>
+          <p className="mt-2 text-[11.5px] leading-relaxed text-surface-600">
+            {resume.languages
+              .map((l) => {
+                const lang = typeof l === 'string' ? l : l.language;
+                const prof = typeof l === 'string' ? '' : l.proficiency;
+                return prof ? `${lang} — ${prof}` : lang;
+              })
+              .join('  ·  ')}
+          </p>
         </section>
       );
     }

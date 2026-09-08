@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useResume } from '../../../context/ResumeContext';
-import { Input, Textarea, EntryCard, AddButton, EmptyHint } from '../fields';
+import { Input, EntryCard, AddButton, EmptyHint } from '../fields';
 import { uid } from '../../../lib/utils';
 import { EntryReorder } from '../EntryReorder';
 
@@ -56,24 +56,11 @@ function TechPicker({ value, onChange }) {
 }
 
 function emptyEntry() {
-  return { _key: uid(), title: '', description: '', tech: [], link: '' };
+  return { _key: uid(), title: '', bullets: [''], description: '', tech: [], link: '' };
 }
 
 function getEntryKey(entry) {
   return entry._id || entry._key;
-}
-
-function renderProjectEntry(proj, index) {
-  const key = getEntryKey(proj);
-  const entryErrors = errors[index]?.errors || {};
-  return (
-    <EntryCard key={key} title={proj.title || 'Project'} badge={index + 1} onRemove={() => remove(key)}>
-      <Input label="Project title" value={proj.title} onChange={(v) => update(key, { title: v })} placeholder="Devmetrics" error={entryErrors.title} />
-      <Textarea label="Description" value={proj.description} onChange={(v) => update(key, { description: v })} placeholder="What it does and why it matters" rows={2} error={entryErrors.description} />
-      <TechPicker value={proj.tech} onChange={(v) => update(key, { tech: v })} />
-      <Input label="Link (optional)" value={proj.link} onChange={(v) => update(key, { link: v })} placeholder="github.com/you/project" />
-    </EntryCard>
-  );
 }
 
 export default function ProjectsStep({ errors = [] }) {
@@ -87,6 +74,80 @@ export default function ProjectsStep({ errors = [] }) {
     setList(list.map((p) => (getEntryKey(p) === key ? { ...p, ...patch } : p)));
 
   const handleReorder = (newList) => setList(newList);
+
+  const setBullet = (key, bIndex, value) => {
+    const entry = list.find((p) => getEntryKey(p) === key);
+    const bullets = [...(entry?.bullets || (entry?.description ? [entry.description] : ['']))];
+    bullets[bIndex] = value;
+    update(key, { bullets, description: bullets.filter(Boolean).join('\n') });
+  };
+
+  const addBullet = (key) => {
+    const entry = list.find((p) => getEntryKey(p) === key);
+    const bullets = [...(entry?.bullets || (entry?.description ? [entry.description] : [''])), ''];
+    update(key, { bullets });
+  };
+
+  const removeBullet = (key, bIndex) => {
+    const entry = list.find((p) => getEntryKey(p) === key);
+    const existing = entry?.bullets || (entry?.description ? [entry.description] : ['']);
+    const bullets = existing.filter((_, i) => i !== bIndex);
+    update(key, { bullets, description: bullets.filter(Boolean).join('\n') });
+  };
+
+  function renderProjectEntry(proj, index) {
+    const key = getEntryKey(proj);
+    const entryErrors = errors[index]?.errors || {};
+    const bullets = proj.bullets && proj.bullets.length > 0 
+      ? proj.bullets 
+      : (proj.description ? [proj.description] : ['']);
+
+    return (
+      <EntryCard key={key} title={proj.title || 'Project'} badge={index + 1} onRemove={() => remove(key)}>
+        <Input label="Project title" value={proj.title} onChange={(v) => update(key, { title: v })} placeholder="Devmetrics" error={entryErrors.title} />
+
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-surface-700">Bullet points</span>
+          <div className="space-y-2">
+            {bullets.map((b, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  value={b}
+                  onChange={(e) => setBullet(key, i, e.target.value)}
+                  placeholder="Built an analytics dashboard used by 40k+ users"
+                  className="input-field"
+                  aria-label={`Bullet ${i + 1}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeBullet(key, i)}
+                  className="btn-ghost shrink-0 text-surface-400 hover:text-red-600"
+                  aria-label="Remove bullet"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+          {entryErrors.bullets && (
+            <p className="mt-1 text-xs text-red-600">{entryErrors.bullets}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => addBullet(key)}
+            className="mt-2 text-xs font-semibold text-brand-600 hover:text-brand-700"
+          >
+            + Add bullet point
+          </button>
+        </div>
+
+        <TechPicker value={proj.tech} onChange={(v) => update(key, { tech: v })} />
+        <Input label="Link (optional)" value={proj.link} onChange={(v) => update(key, { link: v })} placeholder="github.com/you/project" />
+      </EntryCard>
+    );
+  }
 
   if (list.length === 0) {
     return (

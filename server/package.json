@@ -5,11 +5,12 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon -e js,json,env src/index.js",
     "lint": "eslint src --ext js",
     "lint:fix": "eslint src --ext js --fix"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -18,14 +19,20 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-rate-limit": "^8.7.0",
+    "google-auth-library": "^11.0.2",
     "helmet": "^8.3.0",
     "jsdom": "^29.1.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.0",
+    "mammoth": "^1.12.2",
+    "multer": "^2.3.0",
     "nodemailer": "^9.1.0",
-    "puppeteer": "^23.11.1"
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.23.0",
+    "puppeteer": "^23.11.1",
+    "resend": "^6.25.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "eslint": "^10.9.1",
     "nodemon": "^3.1.9"
   }

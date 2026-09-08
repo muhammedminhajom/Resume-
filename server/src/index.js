@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const { exec } = require('child_process');
 const express = require('express');
@@ -6,7 +7,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { connectDB } = require('./config/db');
+const { getSupabase } = require('./config/supabase');
 const { notFound, errorHandler } = require('./middleware/error');
 
 const authRoutes = require('./routes/auth');
@@ -104,9 +105,31 @@ function startServer() {
   process.on('SIGTERM', shutdown);
 }
 
+function validateEnv() {
+  const required = ['JWT_SECRET', 'CLIENT_ORIGIN', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+  const missing = required.filter((key) => !process.env[key]);
+  if (missing.length > 0) {
+    console.error('[api] Missing required environment variables:', missing.join(', '));
+    console.error('[api] Set them in .env or your deployment environment.');
+    process.exit(1);
+  }
+  if (process.env.NODE_ENV === 'production' && process.env.JWT_SECRET === 'dev_secret') {
+    console.error('[api] JWT_SECRET must be set to a strong random value in production');
+    process.exit(1);
+  }
+}
+
 async function start() {
   try {
-    await connectDB();
+    validateEnv();
+    console.log('[auth] GOOGLE_CLIENT_ID loaded:', process.env.GOOGLE_CLIENT_ID ? `${process.env.GOOGLE_CLIENT_ID.slice(0, 16)}...` : 'NOT FOUND');
+    const supabase = getSupabase();
+    const { error } = await supabase.from('users').select('id').limit(1);
+    if (error && error.code !== 'PGRST116') {
+      console.warn('[db/supabase] Note during initial ping:', error.message);
+    } else {
+      console.log('[db/supabase] Connected to Supabase Postgres database.');
+    }
     startServer();
   } catch (err) {
     console.error('[api] failed to start:', err.message);

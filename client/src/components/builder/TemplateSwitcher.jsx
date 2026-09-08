@@ -4,15 +4,16 @@ import MiniPreview from '../preview/MiniPreview';
 import Modal from '../ui/Modal';
 
 const OPTIONS = [
-  { id: 'modern', label: 'Modern', description: 'Clean contemporary resume' },
-  { id: 'classic', label: 'Classic', description: 'Traditional professional resume' },
-  { id: 'minimal', label: 'Minimal', description: 'Simple ATS-friendly layout' },
+  { id: 'Arial', label: 'Arial', description: 'Clean universal ATS sans-serif' },
+  { id: 'Calibri', label: 'Calibri', description: 'Modern professional ATS sans-serif' },
+  { id: 'Times New Roman', label: 'Times New Roman', description: 'Standard formal ATS serif' },
+  { id: 'Georgia', label: 'Georgia', description: 'Elegant readable ATS serif' },
 ];
 
 export default function TemplateSwitcher({ compact = false }) {
   const { resume, setSection } = useResume();
   const [open, setOpen] = useState(false);
-  const active = resume.template;
+  const active = resume.font || resume.template || 'Arial';
 
   if (compact) {
     return (
@@ -23,7 +24,10 @@ export default function TemplateSwitcher({ compact = false }) {
             return (
               <button
                 key={opt.id}
-                onClick={() => setSection('template', opt.id)}
+                onClick={() => {
+                  setSection('font', opt.id);
+                  setSection('template', opt.id);
+                }}
                 aria-pressed={isActive}
                 className={`flex items-center justify-between rounded-button border px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
                   isActive
@@ -42,13 +46,16 @@ export default function TemplateSwitcher({ compact = false }) {
           })}
         </div>
         <button onClick={() => setOpen(true)} className="btn-secondary mt-3 w-full text-xs">
-          Browse templates
+          Browse ATS fonts
         </button>
         <TemplateModal
           open={open}
           onClose={() => setOpen(false)}
           active={active}
-          onChange={(id) => setSection('template', id)}
+          onChange={(id) => {
+            setSection('font', id);
+            setSection('template', id);
+          }}
         />
       </div>
     );
@@ -64,13 +71,16 @@ export default function TemplateSwitcher({ compact = false }) {
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
         </svg>
-        Template
+        ATS Font
       </button>
       <TemplateModal
         open={open}
         onClose={() => setOpen(false)}
         active={active}
-        onChange={(id) => setSection('template', id)}
+        onChange={(id) => {
+          setSection('font', id);
+          setSection('template', id);
+        }}
       />
     </div>
   );

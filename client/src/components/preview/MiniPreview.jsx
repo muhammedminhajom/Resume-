@@ -31,16 +31,34 @@ export default function MiniPreview({ resume }) {
     if (!data || (Array.isArray(data) && data.length === 0)) return null;
     if (!Array.isArray(data)) return null;
 
-    const title = { education: 'Education', experience: 'Experience', skills: 'Skills', projects: 'Projects', certifications: 'Certifications' }[key];
+    const title = {
+      education: 'Education',
+      experience: 'Experience',
+      skills: 'Skills',
+      leadership: 'Leadership & Activities',
+      projects: 'Projects',
+      certifications: 'Certifications',
+      languages: 'Languages',
+    }[key];
 
-    if (key === 'skills') {
+    if (key === 'skills' || key === 'languages') {
       return (
         <div key={key} className="mt-3">
-          <div className="section-title mb-1.5">Skills</div>
+          <div className="section-title mb-1.5">{title}</div>
           <div className="flex flex-wrap gap-1">
-            {data.slice(0, 5).map((s, i) => (
-              <span key={i} className="rounded-full bg-surface-100 px-1.5 py-0.5 text-[7px] text-surface-700">{s}</span>
-            ))}
+            {data.slice(0, 5).map((item, i) => {
+              const text =
+                typeof item === 'string'
+                  ? item
+                  : item.proficiency
+                  ? `${item.language} (${item.proficiency})`
+                  : item.language;
+              return (
+                <span key={i} className="rounded-full bg-surface-100 px-1.5 py-0.5 text-[7px] text-surface-700">
+                  {text}
+                </span>
+              );
+            })}
           </div>
         </div>
       );
@@ -54,12 +72,13 @@ export default function MiniPreview({ resume }) {
             const left =
               key === 'education' ? item.institution :
               key === 'experience' ? [item.role, item.company].filter(Boolean).join(' — ') :
+              key === 'leadership' ? [item.role, item.organization].filter(Boolean).join(' — ') :
               key === 'projects' ? item.title :
               item.name;
             return (
               <div key={i}>
                 <div className="text-[8px] font-semibold text-surface-900">{left || 'Untitled'}</div>
-                {key === 'experience' && item.bullets?.length > 0 && (
+                {(key === 'experience' || key === 'projects' || key === 'leadership') && item.bullets?.length > 0 && (
                   <div className="mt-0.5 space-y-0.5">
                     {item.bullets.filter(Boolean).slice(0, 2).map((b, j) => (
                       <div key={j} className="flex gap-1 text-[7px] text-surface-500">

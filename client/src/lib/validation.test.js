@@ -158,10 +158,18 @@ describe('validation', () => {
       expect(errors[0].errors.description).toBe('Description is required.');
     });
 
-    it('returns empty array for valid projects', () => {
+    it('returns empty array for valid projects with description', () => {
       const errors = validateProjects([{
         title: 'My Project',
         description: 'Does cool stuff',
+      }]);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('returns empty array for valid projects with bullets', () => {
+      const errors = validateProjects([{
+        title: 'My Project',
+        bullets: ['Implemented authentication', 'Optimized database queries'],
       }]);
       expect(errors).toHaveLength(0);
     });

@@ -4,6 +4,7 @@ import { Input, FieldGrid, EntryCard, AddButton, EmptyHint } from '../fields';
 import { uid } from '../../../lib/utils';
 import { api } from '../../../api/client';
 import { EntryReorder } from '../EntryReorder';
+import { sortReverseChronological } from '../../../lib/resume';
 
 function emptyEntry() {
   return { _key: uid(), company: '', role: '', start_date: '', end_date: '', bullets: [''] };
@@ -38,74 +39,6 @@ function SuggestButton({ bullet, onSuggest, busy }) {
         </span>
       )}
     </button>
-  );
-}
-
-function renderExperienceEntry(entry, index) {
-  const key = getEntryKey(entry);
-  const bullets = entry.bullets || [];
-  const entryErrors = errors[index]?.errors || {};
-  return (
-    <EntryCard
-      key={key}
-      title={entry.role || entry.company || 'Experience entry'}
-      badge={index + 1}
-      onRemove={() => remove(key)}
-    >
-      <FieldGrid>
-        <Input label="Job title" value={entry.role} onChange={(v) => update(key, { role: v })} placeholder="Full-Stack Engineer" error={entryErrors.role} />
-        <Input label="Company" value={entry.company} onChange={(v) => update(key, { company: v })} placeholder="Acme Corp" error={entryErrors.company} />
-      </FieldGrid>
-      <FieldGrid>
-        <Input label="Start date" value={entry.start_date} onChange={(v) => update(key, { start_date: v })} placeholder="2021" />
-        <Input label="End date" value={entry.end_date} onChange={(v) => update(key, { end_date: v })} placeholder="Present" error={entryErrors.end_date} />
-      </FieldGrid>
-
-      <div>
-        <span className="mb-1.5 block text-sm font-medium text-surface-700">Bullet points</span>
-        <div className="space-y-2">
-          {bullets.map((b, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                value={b}
-                onChange={(e) => setBullet(key, i, e.target.value)}
-                placeholder="Built an analytics dashboard used by 40k+ users"
-                className="input-field"
-                aria-label={`Bullet ${i + 1}`}
-              />
-              <SuggestButton
-                bullet={b}
-                busy={busyBullet === `${key}:${i}`}
-                onSuggest={() => suggest(key, i, b)}
-              />
-              <button
-                type="button"
-                onClick={() => removeBullet(key, i)}
-                className="btn-ghost shrink-0 text-surface-400 hover:text-red-600"
-                aria-label="Remove bullet"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
-        {entryErrors.bullets && (
-          <p className="mt-1 text-xs text-red-600">{entryErrors.bullets}</p>
-        )}
-        <button
-          type="button"
-          onClick={() => addBullet(key)}
-          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Add bullet
-        </button>
-      </div>
-    </EntryCard>
   );
 }
 
@@ -154,6 +87,74 @@ export default function ExperienceStep({ errors = [] }) {
     }
   }
 
+  function renderExperienceEntry(entry, index) {
+    const key = getEntryKey(entry);
+    const bullets = entry.bullets || [];
+    const entryErrors = errors[index]?.errors || {};
+    return (
+      <EntryCard
+        key={key}
+        title={entry.role || entry.company || 'Experience entry'}
+        badge={index + 1}
+        onRemove={() => remove(key)}
+      >
+        <FieldGrid>
+          <Input label="Job title" value={entry.role} onChange={(v) => update(key, { role: v })} placeholder="Full-Stack Engineer" error={entryErrors.role} />
+          <Input label="Company" value={entry.company} onChange={(v) => update(key, { company: v })} placeholder="Acme Corp" error={entryErrors.company} />
+        </FieldGrid>
+        <FieldGrid>
+          <Input label="Start date" value={entry.start_date} onChange={(v) => update(key, { start_date: v })} placeholder="2021" />
+          <Input label="End date" value={entry.end_date} onChange={(v) => update(key, { end_date: v })} placeholder="Present" error={entryErrors.end_date} />
+        </FieldGrid>
+
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-surface-700">Bullet points</span>
+          <div className="space-y-2">
+            {bullets.map((b, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  value={b}
+                  onChange={(e) => setBullet(key, i, e.target.value)}
+                  placeholder="Built an analytics dashboard used by 40k+ users"
+                  className="input-field"
+                  aria-label={`Bullet ${i + 1}`}
+                />
+                <SuggestButton
+                  bullet={b}
+                  busy={busyBullet === `${key}:${i}`}
+                  onSuggest={() => suggest(key, i, b)}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeBullet(key, i)}
+                  className="btn-ghost shrink-0 text-surface-400 hover:text-red-600"
+                  aria-label="Remove bullet"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+          {entryErrors.bullets && (
+            <p className="mt-1 text-xs text-red-600">{entryErrors.bullets}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => addBullet(key)}
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add bullet
+          </button>
+        </div>
+      </EntryCard>
+    );
+  }
+
   if (list.length === 0) {
     return (
       <div className="space-y-4">
@@ -178,7 +179,22 @@ export default function ExperienceStep({ errors = [] }) {
         renderItem={(entry, index) => renderExperienceEntry(entry, index)}
         onChange={handleReorder}
       />
-      <AddButton label="Add experience" onClick={add} />
+      <div className="flex items-center justify-between gap-3">
+        <AddButton label="Add experience" onClick={add} />
+        {list.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setList(sortReverseChronological(list))}
+            className="btn-secondary !py-2 !px-3 text-xs"
+            title="Sort experiences from newest to oldest"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
+            </svg>
+            Auto-sort (Newest first)
+          </button>
+        )}
+      </div>
     </div>
   );
 }

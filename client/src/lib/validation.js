@@ -82,7 +82,10 @@ export function validateProjects(projects) {
     if (!p.title?.trim()) {
       errors.title = 'Project title is required.';
     }
-    if (!p.description?.trim()) {
+    const hasBullets = p.bullets?.some((b) => b?.trim());
+    const hasDescription = p.description?.trim();
+    if (!hasBullets && !hasDescription) {
+      errors.bullets = 'At least one bullet point is required.';
       errors.description = 'Description is required.';
     }
     return { index: i, errors: Object.keys(errors).length ? errors : null };
@@ -113,10 +116,14 @@ export function validateSection(resume, sectionKey) {
       return validateExperience(resume.experience);
     case 'skills':
       return {};
+    case 'leadership':
+      return {};
     case 'projects':
       return validateProjects(resume.projects);
     case 'certifications':
       return validateCertifications(resume.certifications);
+    case 'languages':
+      return {};
     default:
       return {};
   }

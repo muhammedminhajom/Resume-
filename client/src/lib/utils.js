@@ -15,8 +15,19 @@ export function normalizeResume(resume) {
     ...resume,
     education: ensureListIds(resume.education),
     experience: ensureListIds(resume.experience),
-    projects: ensureListIds(resume.projects),
+    projects: ensureListIds(resume.projects).map((p) => {
+      let bullets = p.bullets;
+      if (!bullets || !bullets.length) {
+        bullets = p.description ? [p.description] : [''];
+      }
+      return { ...p, bullets };
+    }),
+    leadership: ensureListIds(resume.leadership).map((l) => ({
+      ...l,
+      bullets: l.bullets && l.bullets.length ? l.bullets : [''],
+    })),
     certifications: ensureListIds(resume.certifications),
+    languages: ensureListIds(resume.languages),
   };
 }
 

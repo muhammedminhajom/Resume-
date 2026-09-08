@@ -41,6 +41,21 @@ export const api = {
   post: (path, body) => request('POST', path, body),
   put: (path, body) => request('PUT', path, body),
   delete: (path) => request('DELETE', path),
+  getAtsScore: (id, jobDescription) => request('POST', `/resumes/${id}/ats-score`, { jobDescription }),
+  getRawAtsScore: (resumeText, jobDescription) => request('POST', '/resumes/raw/ats-score', { resumeText, jobDescription }),
+  compareJobMatch: (payload) => request('POST', '/resumes/job-match', payload),
+
+  async uploadResume(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${BASE}/resumes/parse-upload`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: formData,
+    });
+    return handleJson(res);
+  },
 
   async exportPdf(id) {
     const res = await fetch(`${BASE}/resumes/${id}/export`, {

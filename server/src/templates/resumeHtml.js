@@ -6,36 +6,78 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const FONT_MAP = {
+  Arial: 'Arial, Helvetica, sans-serif',
+  Calibri: 'Calibri, Candara, "Segoe UI", Arial, sans-serif',
+  'Times New Roman': '"Times New Roman", Times, Georgia, serif',
+  Georgia: 'Georgia, serif',
+  // fallbacks for legacy values
+  modern: 'Arial, Helvetica, sans-serif',
+  classic: 'Georgia, serif',
+  minimal: 'Calibri, Candara, "Segoe UI", Arial, sans-serif',
+};
+
+const DEFAULT_ORDER = [
+  'personal_info',
+  'experience',
+  'projects',
+  'skills',
+  'leadership',
+  'education',
+  'certifications',
+  'languages',
+];
+
+const LABELS = {
+  personal_info: 'Professional Summary',
+  experience: 'Work Experience',
+  projects: 'Projects',
+  skills: 'Skills',
+  leadership: 'Leadership & Activities',
+  education: 'Education',
+  certifications: 'Certifications',
+  languages: 'Languages',
+};
+
+function parseYear(dateStr) {
+  if (!dateStr) return 0;
+  const str = String(dateStr).trim().toLowerCase();
+  if (str === 'present' || str === 'current' || str === 'now' || str === 'ongoing') {
+    return 999999;
+  }
+  const match = str.match(/\b(19\d\d|20\d\d)\b/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    for (let i = 0; i < months.length; i++) {
+      if (str.includes(months[i])) return year * 100 + (i + 1);
+    }
+    return year * 100;
+  }
+  return 0;
+}
+
+function sortReverseChronological(items) {
+  if (!Array.isArray(items)) return [];
+  return [...items].sort((a, b) => {
+    const endA = parseYear(a.end_date);
+    const endB = parseYear(b.end_date);
+    if (endB !== endA) return endB - endA;
+    const startA = parseYear(a.start_date || a.date);
+    const startB = parseYear(b.start_date || b.date);
+    return startB - startA;
+  });
+}
+
 function contactItems(personalInfo) {
   const items = [
-    personalInfo.email,
     personalInfo.phone,
+    personalInfo.email,
     personalInfo.location,
     ...(Array.isArray(personalInfo.links) ? personalInfo.links : []),
   ].filter(Boolean);
   return [...new Set(items)].map((item) => escapeHtml(item));
 }
-
-function hasData(section) {
-  if (Array.isArray(section)) return section.length > 0;
-  if (!section) return false;
-  if (typeof section === 'object') {
-    return Object.values(section).some((v) => {
-      if (Array.isArray(v)) return v.length > 0;
-      return v;
-    });
-  }
-  return section;
-}
-
-const DEFAULT_ORDER = [
-  'personal_info',
-  'education',
-  'experience',
-  'skills',
-  'projects',
-  'certifications',
-];
 
 function orderedSections(resume) {
   const order =
@@ -49,222 +91,195 @@ function orderedSections(resume) {
   return present;
 }
 
-const STYLES = {
-  modern: {
-    fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
-    headerClass: 'modern-header',
-    nameClass: 'modern-name',
-    headlineClass: 'modern-headline',
-    contactClass: 'modern-contact',
-    summaryClass: 'modern-summary',
-    contactSep: ' &nbsp;•&nbsp; ',
-    sectionTitleClass: 'modern-section-title',
-    styles: `
-      .modern-page { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #1e293b; }
-      .modern-header { border-bottom: 3px solid #1e3a8a; padding-bottom: 14px; }
-      .modern-name { font-size: 28px; font-weight: 700; color: #1e3a8a; margin: 0 0 2px 0; letter-spacing: -0.5px; }
-      .modern-headline { font-size: 15px; color: #475569; margin: 0 0 8px 0; font-weight: 600; }
-      .modern-contact { font-size: 11.5px; color: #475569; margin: 4px 0; }
-      .modern-summary { font-size: 12.5px; color: #334155; margin: 8px 0 0 0; line-height: 1.5; }
-      .modern-section-title {
-        font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
-        color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin: 16px 0 8px 0;
-      }
-      .modern-row { display: flex; justify-content: space-between; align-items: baseline; }
-      .modern-company { font-weight: 600; font-size: 12.5px; color: #0f172a; }
-      .modern-date { font-size: 11px; color: #64748b; white-space: nowrap; }
-      .modern-sub { font-size: 12px; color: #475569; margin: 1px 0 6px 0; }
-      .modern-bullets { margin: 0; padding-left: 18px; }
-      .modern-bullets li { font-size: 12px; line-height: 1.5; color: #334155; margin-bottom: 3px; }
-      .modern-skills span {
-        display: inline-block; font-size: 11.5px; background: #eef2ff; color: #1e3a8a;
-        border-radius: 999px; padding: 4px 10px; margin: 0 6px 6px 0; font-weight: 500;
-      }
-      .modern-text { font-size: 12px; line-height: 1.5; color: #334155; margin: 2px 0; }
-      .modern-tech { font-size: 11px; color: #64748b; margin-top: 3px; }
-      .modern-item { margin-bottom: 12px; }
-    `,
-  },
-  classic: {
-    fontFamily: "Georgia, 'Times New Roman', serif",
-    headerClass: 'classic-header',
-    nameClass: 'classic-name',
-    headlineClass: 'classic-headline',
-    contactClass: 'classic-contact',
-    summaryClass: 'classic-summary',
-    contactSep: ' &nbsp;|&nbsp; ',
-    sectionTitleClass: 'classic-section-title',
-    styles: `
-      .classic-page { font-family: Georgia, 'Times New Roman', serif; color: #111827; }
-      .classic-header { text-align: center; border-bottom: 2px solid #111827; padding-bottom: 12px; }
-      .classic-name { font-size: 30px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 6px 0; color: #111827; }
-      .classic-headline { font-size: 14px; font-style: italic; color: #374151; margin: 0 0 8px 0; }
-      .classic-contact { font-size: 12px; color: #374151; margin: 2px 0; }
-      .classic-summary { font-size: 13px; color: #111827; margin: 10px 0 0 0; line-height: 1.6; font-style: italic; }
-      .classic-section-title {
-        font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
-        color: #111827; border-bottom: 1px solid #9ca3af; padding-bottom: 3px; margin: 16px 0 8px 0;
-      }
-      .classic-row { display: flex; justify-content: space-between; align-items: baseline; }
-      .classic-company { font-weight: 700; font-size: 13px; }
-      .classic-date { font-size: 12px; font-style: italic; color: #374151; white-space: nowrap; }
-      .classic-sub { font-size: 13px; font-style: italic; color: #374151; margin: 1px 0 6px 0; }
-      .classic-bullets { margin: 0; padding-left: 18px; }
-      .classic-bullets li { font-size: 12.5px; line-height: 1.55; margin-bottom: 3px; }
-      .classic-skills span {
-        display: inline-block; font-size: 12px; border: 1px solid #9ca3af; padding: 3px 9px;
-        margin: 0 5px 5px 0; }
-      .classic-text { font-size: 12.5px; line-height: 1.55; margin: 2px 0; }
-      .classic-tech { font-size: 12px; font-style: italic; color: #374151; margin-top: 3px; }
-      .classic-item { margin-bottom: 12px; }
-    `,
-  },
-  minimal: {
-    fontFamily: "'Helvetica Neue', 'Segoe UI', Arial, sans-serif",
-    headerClass: 'minimal-header',
-    nameClass: 'minimal-name',
-    headlineClass: 'minimal-headline',
-    contactClass: 'minimal-contact',
-    summaryClass: 'minimal-summary',
-    contactSep: ' &nbsp;·&nbsp; ',
-    sectionTitleClass: 'minimal-section-title',
-    styles: `
-      .minimal-page { font-family: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif; color: #111827; }
-      .minimal-header { padding-bottom: 12px; margin-bottom: 4px; }
-      .minimal-name { font-size: 26px; font-weight: 300; letter-spacing: 1px; color: #111827; margin: 0 0 2px 0; }
-      .minimal-headline { font-size: 13px; letter-spacing: 0.6px; text-transform: uppercase; color: #6b7280; margin: 0 0 8px 0; }
-      .minimal-contact { font-size: 11.5px; color: #6b7280; margin: 2px 0; }
-      .minimal-summary { font-size: 12.5px; color: #111827; margin: 8px 0 0 0; line-height: 1.6; }
-      .minimal-section-title {
-        font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2.5px;
-        color: #6b7280; margin: 20px 0 8px 0;
-      }
-      .minimal-row { display: flex; justify-content: space-between; align-items: baseline; }
-      .minimal-company { font-weight: 600; font-size: 12.5px; }
-      .minimal-date { font-size: 11px; color: #9ca3af; white-space: nowrap; }
-      .minimal-sub { font-size: 12px; color: #374151; margin: 1px 0 6px 0; }
-      .minimal-bullets { margin: 0; padding-left: 16px; }
-      .minimal-bullets li { font-size: 12px; line-height: 1.55; margin-bottom: 3px; color: #374151; }
-      .minimal-skills span {
-        display: inline-block; font-size: 11.5px; color: #374151; padding: 3px 0; margin: 0 14px 3px 0;
-      }
-      .minimal-text { font-size: 12px; line-height: 1.55; color: #374151; margin: 2px 0; }
-      .minimal-tech { font-size: 11px; color: #9ca3af; margin-top: 3px; }
-      .minimal-item { margin-bottom: 12px; }
-    `,
-  },
-};
-
-const LABELS = {
-  education: 'Education',
-  experience: 'Experience',
-  skills: 'Skills',
-  projects: 'Projects',
-  certifications: 'Certifications',
-};
-
-const ROW_CLASS = 'row';
-const COMPANY_CLASS = 'company';
-const DATE_CLASS = 'date';
-const SUB_CLASS = 'sub';
-const BULLETS_CLASS = 'bullets';
-const TEXT_CLASS = 'text';
-const TECH_CLASS = 'tech';
-const ITEM_CLASS = 'item';
-
-function cls(prefix, suffix) {
-  return `${prefix}-${suffix}`;
-}
-
-function renderHeader(resume, style, prefix) {
-  const p = resume.personal_info;
+function renderHeader(p) {
   if (!p || !p.name) return '';
   const contacts = contactItems(p);
   return `
-    <header class="${style.headerClass}">
-      <h1 class="${style.nameClass}">${escapeHtml(p.name)}</h1>
-      ${p.headline ? `<p class="${style.headlineClass}">${escapeHtml(p.headline)}</p>` : ''}
-      ${contacts.length ? `<p class="${style.contactClass}">${contacts.join(style.contactSep)}</p>` : ''}
-      ${p.summary ? `<p class="${style.summaryClass}">${escapeHtml(p.summary)}</p>` : ''}
+    <header class="ats-header">
+      <h1 class="ats-name">${escapeHtml(p.name)}</h1>
+      ${p.headline ? `<div class="ats-headline">${escapeHtml(p.headline)}</div>` : ''}
+      ${contacts.length ? `<div class="ats-contact">${contacts.join(' &nbsp;•&nbsp; ')}</div>` : ''}
     </header>`;
 }
 
 function renderSections(resume) {
-  const template = resume.template || 'modern';
-  const prefix = template;
   const parts = [];
   const keys = orderedSections(resume);
+  const p = resume.personal_info || {};
 
   for (const key of keys) {
     if (key === 'personal_info') {
-      const header = renderHeader(resume, STYLES[template], template);
+      const header = renderHeader(p);
       if (header) parts.push(header);
+      if (p.summary) {
+        parts.push(`
+          <section class="ats-section">
+            <h2 class="ats-section-title">${LABELS.personal_info}</h2>
+            <p class="ats-summary-text">${escapeHtml(p.summary)}</p>
+          </section>
+        `);
+      }
       continue;
     }
 
-    const data = resume[key];
-    if (!hasData(data)) continue;
-
-    if (key === 'skills') {
-      parts.push(
-        `<h2 class="${STYLES[template].sectionTitleClass}">${LABELS.skills}</h2>`,
-        `<div class="${cls(prefix, 'skills')}">${data
-          .map((s) => `<span>${escapeHtml(s)}</span>`)
-          .join('')}</div>`
-      );
-      continue;
-    }
-
-    let blocks = [];
-    if (key === 'education') {
-      blocks = data.map((e) => {
-        const dates = [e.start_date, e.end_date].filter(Boolean).join(' – ');
-        const line = [e.degree, e.field].filter(Boolean).join(', ');
-        return `
-        <div class="${cls(prefix, ITEM_CLASS)}">
-          <div class="${cls(prefix, ROW_CLASS)}">
-            <strong class="${cls(prefix, COMPANY_CLASS)}">${escapeHtml(e.institution)}</strong>
-            ${dates ? `<span class="${cls(prefix, DATE_CLASS)}">${escapeHtml(dates)}</span>` : ''}
-          </div>
-          ${line || e.gpa ? `<p class="${cls(prefix, SUB_CLASS)}">${escapeHtml(line)}${e.gpa ? ` &nbsp;•&nbsp; GPA: ${escapeHtml(e.gpa)}` : ''}</p>` : ''}
-        </div>`;
-      });
-    } else if (key === 'experience') {
-      blocks = data.map((x) => {
+    if (key === 'experience') {
+      const items = sortReverseChronological(resume.experience || []);
+      if (!items.length) continue;
+      const blocks = items.map((x) => {
         const dates = [x.start_date, x.end_date].filter(Boolean).join(' – ');
         const title = [x.role, x.company].filter(Boolean).join(' — ');
         return `
-        <div class="${cls(prefix, ITEM_CLASS)}">
-          <div class="${cls(prefix, ROW_CLASS)}">
-            <strong class="${cls(prefix, COMPANY_CLASS)}">${escapeHtml(title)}</strong>
-            ${dates ? `<span class="${cls(prefix, DATE_CLASS)}">${escapeHtml(dates)}</span>` : ''}
-          </div>
-          ${x.bullets && x.bullets.length ? `<ul class="${cls(prefix, BULLETS_CLASS)}">${x.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : ''}
-        </div>`;
+          <div class="ats-entry">
+            <div class="ats-row">
+              <span class="ats-entry-title">${escapeHtml(title)}</span>
+              ${dates ? `<span class="ats-date">${escapeHtml(dates)}</span>` : ''}
+            </div>
+            ${x.bullets && x.bullets.length ? `<ul class="ats-bullets">${x.bullets.filter(Boolean).map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : ''}
+          </div>`;
       });
-    } else if (key === 'projects') {
-      blocks = data.map((p) => `
-        <div class="${cls(prefix, ITEM_CLASS)}">
-          <div class="${cls(prefix, ROW_CLASS)}">
-            <strong class="${cls(prefix, COMPANY_CLASS)}">${escapeHtml(p.title)}</strong>
-            ${p.link ? `<a class="${cls(prefix, TECH_CLASS)}" href="${escapeHtml(p.link)}">${escapeHtml(p.link)}</a>` : ''}
-          </div>
-          ${p.description ? `<p class="${cls(prefix, TEXT_CLASS)}">${escapeHtml(p.description)}</p>` : ''}
-          ${p.tech && p.tech.length ? `<p class="${cls(prefix, TECH_CLASS)}">${escapeHtml(p.tech.join(', '))}</p>` : ''}
-        </div>`);
-    } else if (key === 'certifications') {
-      blocks = data.map((c) => `
-        <div class="${cls(prefix, ITEM_CLASS)}">
-          <div class="${cls(prefix, ROW_CLASS)}">
-            <strong class="${cls(prefix, COMPANY_CLASS)}">${escapeHtml(c.name)}</strong>
-            ${c.date ? `<span class="${cls(prefix, DATE_CLASS)}">${escapeHtml(c.date)}</span>` : ''}
-          </div>
-          ${c.issuer ? `<p class="${cls(prefix, SUB_CLASS)}">${escapeHtml(c.issuer)}</p>` : ''}
-        </div>`);
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.experience}</h2>
+          ${blocks.join('')}
+        </section>
+      `);
+      continue;
     }
 
-    if (blocks.length) {
-      parts.push(`<h2 class="${STYLES[template].sectionTitleClass}">${LABELS[key]}</h2>`, ...blocks);
+    if (key === 'skills') {
+      const skills = resume.skills || [];
+      if (!skills.length) continue;
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.skills}</h2>
+          <p class="ats-skills-line">${skills.map(escapeHtml).join(' &nbsp;•&nbsp; ')}</p>
+        </section>
+      `);
+      continue;
+    }
+
+    if (key === 'education') {
+      const items = sortReverseChronological(resume.education || []);
+      if (!items.length) continue;
+      const blocks = items.map((e) => {
+        const dates = [e.start_date, e.end_date].filter(Boolean).join(' – ');
+        const line = [e.degree, e.field].filter(Boolean).join(', ');
+        return `
+          <div class="ats-entry">
+            <div class="ats-row">
+              <span class="ats-entry-title">${escapeHtml(e.institution)}</span>
+              ${dates ? `<span class="ats-date">${escapeHtml(dates)}</span>` : ''}
+            </div>
+            ${line || e.gpa ? `<div class="ats-sub">${escapeHtml(line)}${e.gpa ? ` &nbsp;•&nbsp; GPA: ${escapeHtml(e.gpa)}` : ''}</div>` : ''}
+          </div>`;
+      });
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.education}</h2>
+          ${blocks.join('')}
+        </section>
+      `);
+      continue;
+    }
+
+    if (key === 'certifications') {
+      const items = resume.certifications || [];
+      if (!items.length) continue;
+      const blocks = items.map((c) => `
+        <div class="ats-entry">
+          <div class="ats-row">
+            <div>
+              <span class="ats-entry-title">${escapeHtml(c.name)}</span>
+              ${c.issuer ? `<span class="ats-sub"> — ${escapeHtml(c.issuer)}</span>` : ''}
+            </div>
+            ${c.date ? `<span class="ats-date">${escapeHtml(c.date)}</span>` : ''}
+          </div>
+        </div>`);
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.certifications}</h2>
+          ${blocks.join('')}
+        </section>
+      `);
+      continue;
+    }
+
+    if (key === 'projects') {
+      const items = resume.projects || [];
+      if (!items.length) continue;
+      const blocks = items.map((p) => {
+        const hasBullets = p.bullets && p.bullets.length > 0 && p.bullets.some((b) => b && b.trim());
+        const bulletHtml = hasBullets
+          ? `<ul class="ats-bullets">${p.bullets.filter(Boolean).map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>`
+          : p.description
+          ? `<div class="ats-text">${escapeHtml(p.description)}</div>`
+          : '';
+        return `
+          <div class="ats-entry">
+            <div class="ats-row">
+              <span class="ats-entry-title">${escapeHtml(p.title)}</span>
+              ${p.link ? `<a class="ats-link" href="${escapeHtml(p.link)}">${escapeHtml(p.link)}</a>` : ''}
+            </div>
+            ${bulletHtml}
+            ${p.tech && p.tech.length ? `<div class="ats-tech">Technologies: ${escapeHtml(p.tech.join(', '))}</div>` : ''}
+          </div>`;
+      });
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.projects}</h2>
+          ${blocks.join('')}
+        </section>
+      `);
+      continue;
+    }
+
+    if (key === 'leadership') {
+      const items = resume.leadership || [];
+      if (!items.length) continue;
+      const validItems = items.filter(
+        (l) => l.role?.trim() || l.organization?.trim() || (l.bullets && l.bullets.some((b) => b && b.trim()))
+      );
+      if (!validItems.length) continue;
+      const blocks = validItems.map((l) => {
+        const dates = [l.start_date, l.end_date].filter(Boolean).join(' – ');
+        const title = [l.role, l.organization].filter(Boolean).join(' — ');
+        return `
+          <div class="ats-entry">
+            <div class="ats-row">
+              <span class="ats-entry-title">${escapeHtml(title)}</span>
+              ${dates ? `<span class="ats-date">${escapeHtml(dates)}</span>` : ''}
+            </div>
+            ${l.bullets && l.bullets.length ? `<ul class="ats-bullets">${l.bullets.filter(Boolean).map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : ''}
+          </div>`;
+      });
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.leadership}</h2>
+          ${blocks.join('')}
+        </section>
+      `);
+      continue;
+    }
+
+    if (key === 'languages') {
+      const items = resume.languages || [];
+      if (!items.length) continue;
+      const formatted = items
+        .map((l) => {
+          if (typeof l === 'string') return l.trim();
+          const name = (l.language || '').trim();
+          const prof = (l.proficiency || '').trim();
+          return prof ? `${name} — ${prof}` : name;
+        })
+        .filter(Boolean);
+      if (!formatted.length) continue;
+      parts.push(`
+        <section class="ats-section">
+          <h2 class="ats-section-title">${LABELS.languages}</h2>
+          <p class="ats-skills-line">${formatted.map(escapeHtml).join(' &nbsp;•&nbsp; ')}</p>
+        </section>
+      `);
+      continue;
     }
   }
 
@@ -273,28 +288,130 @@ function renderSections(resume) {
 
 function renderResume(resume) {
   const plain = resume.toObject ? resume.toObject() : resume;
-  const template = plain.template || 'modern';
-  const style = STYLES[template] || STYLES.modern;
-  const sectionHtml = renderSections(plain);
+  const fontKey = plain.font || plain.template || 'Arial';
+  const fontFamily = FONT_MAP[fontKey] || FONT_MAP.Arial;
+  const bodyHtml = renderSections(plain);
 
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Resume</title>
+<title>${escapeHtml(plain.title || 'Resume')}</title>
 <style>
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 0; font-family: ${style.fontFamily}; }
-  a { text-decoration: none; color: inherit; }
-  ${style.styles}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: ${fontFamily};
+    color: #000000;
+    background: #ffffff;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+  .ats-document {
+    padding: 0;
+    width: 100%;
+  }
+  .ats-header {
+    text-align: center;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+  }
+  .ats-name {
+    font-size: 20pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+  .ats-headline {
+    font-size: 10.5pt;
+    font-weight: bold;
+    color: #000000;
+    margin-bottom: 3px;
+  }
+  .ats-contact {
+    font-size: 10pt;
+    color: #000000;
+  }
+  .ats-section {
+    margin-top: 14px;
+    margin-bottom: 4px;
+  }
+  .ats-section-title {
+    font-size: 12pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #000000;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 2px;
+    margin-bottom: 6px;
+  }
+  .ats-entry {
+    margin-bottom: 8px;
+  }
+  .ats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .ats-entry-title {
+    font-size: 10.5pt;
+    font-weight: bold;
+    color: #000000;
+  }
+  .ats-date {
+    font-size: 10pt;
+    color: #000000;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .ats-sub {
+    font-size: 10.5pt;
+    color: #000000;
+  }
+  .ats-summary-text {
+    font-size: 10.5pt;
+    line-height: 1.45;
+    color: #000000;
+  }
+  .ats-skills-line {
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #000000;
+  }
+  .ats-bullets {
+    margin-top: 3px;
+    padding-left: 20px;
+    list-style-type: disc;
+  }
+  .ats-bullets li {
+    font-size: 10.5pt;
+    line-height: 1.45;
+    color: #000000;
+    margin-bottom: 2px;
+  }
+  .ats-text {
+    font-size: 10.5pt;
+    margin-top: 2px;
+  }
+  .ats-tech {
+    font-size: 10pt;
+    margin-top: 2px;
+  }
+  .ats-link {
+    font-size: 10pt;
+    color: #000000;
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
-  <main class="${template}-page">
-    ${sectionHtml}
+  <main class="ats-document">
+    ${bodyHtml}
   </main>
 </body>
 </html>`;
 }
 
-module.exports = { renderResume };
+module.exports = { renderResume, LABELS, DEFAULT_ORDER };

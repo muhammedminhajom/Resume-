@@ -22,7 +22,7 @@ function formatRelative(value) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate }) {
+export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate, onRename, onDownload }) {
   const meta = TEMPLATE_META[resume.template] || TEMPLATE_META.modern;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -37,18 +37,22 @@ export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate }) {
   }, []);
 
   return (
-    <div className="group card flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
+    <div
+      className={`group card flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover ${
+        menuOpen ? 'relative z-30' : 'relative'
+      }`}
+    >
       {/* Resume thumbnail */}
       <button
         onClick={onEdit}
-        className="relative block h-48 w-full cursor-pointer overflow-hidden border-b border-surface-100 bg-surface-50 transition-colors hover:bg-surface-100"
+        className="relative block h-48 w-full cursor-pointer overflow-hidden rounded-t-card border-b border-surface-100 dark:border-surface-800 bg-surface-50 dark:bg-surface-850 transition-colors hover:bg-surface-100 dark:hover:bg-surface-800"
         aria-label={`Edit ${resume.title || 'resume'}`}
       >
         <div className="pointer-events-none scale-[0.28] origin-top-left">
           <MiniPreview resume={safeResume} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-surface-900/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-        <span className="absolute left-3 top-3 rounded-button bg-white/90 px-2 py-1 text-[10px] font-semibold text-surface-700 opacity-0 shadow-card backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
+        <span className="absolute left-3 top-3 rounded-button bg-white/90 dark:bg-surface-900/90 px-2 py-1 text-[10px] font-semibold text-surface-700 dark:text-surface-200 opacity-0 shadow-card backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
           Open
         </span>
       </button>
@@ -57,10 +61,10 @@ export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate }) {
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-3 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-semibold text-surface-900" title={resume.title}>
+            <h3 className="truncate text-[15px] font-semibold text-surface-900 dark:text-surface-100" title={resume.title}>
               {resume.title || 'Untitled Resume'}
             </h3>
-            <p className="mt-0.5 text-xs text-surface-400">
+            <p className="mt-0.5 text-xs text-surface-400 dark:text-surface-500">
               Updated {formatRelative(resume.updated_at)}
             </p>
           </div>
@@ -73,8 +77,12 @@ export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate }) {
           </button>
           <div className="relative" ref={menuRef}>
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="icon-btn border border-surface-200 bg-white"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((prev) => !prev);
+              }}
+              className="icon-btn border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800"
               title="More actions"
               aria-label={`More actions for ${resume.title || 'resume'}`}
               aria-expanded={menuOpen}
@@ -86,35 +94,77 @@ export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate }) {
             </button>
             {menuOpen && (
               <div
-                className="absolute right-0 top-full z-30 mt-2 w-44 overflow-hidden rounded-button border border-surface-200 bg-white shadow-elevated animate-scale-in"
+                className="absolute right-0 top-full z-50 mt-1.5 w-44 overflow-hidden rounded-button border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 shadow-elevated animate-scale-in"
                 role="menu"
               >
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onDuplicate();
-                  }}
-                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-surface-700 transition-colors hover:bg-surface-50"
-                >
-                  <svg className="h-4 w-4 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" />
-                  </svg>
-                  Duplicate
-                </button>
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onDelete();
-                  }}
-                  className="flex w-full items-center gap-2.5 border-t border-surface-100 px-4 py-2.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.111 48.111 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                  Delete
-                </button>
+                {onRename && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onRename(resume);
+                    }}
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-surface-700 dark:text-surface-200 transition-colors hover:bg-surface-50 dark:hover:bg-surface-700"
+                  >
+                    <svg className="h-4 w-4 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                    </svg>
+                    Rename
+                  </button>
+                )}
+                {onDuplicate && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onDuplicate(resume);
+                    }}
+                    className="flex w-full items-center gap-2.5 border-t border-surface-100 dark:border-surface-700 px-4 py-2.5 text-left text-sm text-surface-700 dark:text-surface-200 transition-colors hover:bg-surface-50 dark:hover:bg-surface-700"
+                  >
+                    <svg className="h-4 w-4 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" />
+                    </svg>
+                    Duplicate
+                  </button>
+                )}
+                {onDownload && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onDownload(resume);
+                    }}
+                    className="flex w-full items-center gap-2.5 border-t border-surface-100 dark:border-surface-700 px-4 py-2.5 text-left text-sm text-surface-700 dark:text-surface-200 transition-colors hover:bg-surface-50 dark:hover:bg-surface-700"
+                  >
+                    <svg className="h-4 w-4 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Download PDF
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                      onDelete(resume);
+                    }}
+                    className="flex w-full items-center gap-2.5 border-t border-surface-100 dark:border-surface-700 px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.111 48.111 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                    Delete
+                  </button>
+                )}
               </div>
             )}
           </div>

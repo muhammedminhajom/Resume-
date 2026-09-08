@@ -8,11 +8,11 @@ export default function StepNav({ steps, current, onSelect, completion }) {
       {/* Progress indicator */}
       <div className="mb-5">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wide text-surface-400">Resume completion</span>
-          <span className="text-xs font-semibold text-surface-700">{progress}%</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-surface-400 dark:text-surface-500">Resume completion</span>
+          <span className="text-xs font-semibold text-surface-700 dark:text-surface-300">{progress}%</span>
         </div>
         <div
-          className="h-1.5 overflow-hidden rounded-full bg-surface-200"
+          className="h-1.5 overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
@@ -36,10 +36,10 @@ export default function StepNav({ steps, current, onSelect, completion }) {
               aria-current={active ? 'step' : undefined}
               className={`group flex w-full items-center gap-3 rounded-button px-3 py-2.5 text-left text-sm transition-all duration-150 ${
                 active
-                  ? 'bg-brand-50 text-brand-700'
+                  ? 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 font-semibold'
                   : completed
-                  ? 'text-surface-700 hover:bg-surface-100'
-                  : 'text-surface-500 hover:bg-surface-100'
+                  ? 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800'
+                  : 'text-surface-500 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800'
               }`}
             >
               <span
@@ -47,8 +47,8 @@ export default function StepNav({ steps, current, onSelect, completion }) {
                   active
                     ? 'bg-brand-600 text-white ring-2 ring-brand-600/25'
                     : completed
-                    ? 'bg-brand-100 text-brand-700'
-                    : 'bg-surface-100 text-surface-400'
+                    ? 'bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300'
+                    : 'bg-surface-100 dark:bg-surface-800 text-surface-400 dark:text-surface-500'
                 }`}
                 aria-hidden="true"
               >
