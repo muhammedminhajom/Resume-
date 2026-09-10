@@ -1,13 +1,15 @@
 const { getResumeById } = require('../services/dbService');
 const { generateDocx } = require('../services/docxService');
+const { sanitizeResumeInput } = require('../lib/sanitize');
 
 async function exportDocx(req, res, next) {
   try {
-    const resume = await getResumeById(req.params.id, req.user.id);
-    if (!resume) {
+    const rawResume = await getResumeById(req.params.id, req.user.id);
+    if (!rawResume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
 
+    const resume = sanitizeResumeInput(rawResume);
     const docx = await generateDocx(resume);
 
     const baseName = (resume.title || 'resume')

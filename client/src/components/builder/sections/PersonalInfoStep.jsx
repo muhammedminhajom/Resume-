@@ -25,8 +25,8 @@ export default function PersonalInfoStep({ errors = {} }) {
       />
 
       <FieldGrid>
-        <Input label="Full name" value={p.name} onChange={(v) => set('name', v)} placeholder="Alex Morgan" helper="Shown at the top of your resume." error={errors.name} />
-        <Input label="Professional title" value={p.headline} onChange={(v) => set('headline', v)} placeholder="Senior Full-Stack Engineer" helper="Your current or target role." />
+        <Input label="Full name" value={p.name} onChange={(v) => set('name', v)} placeholder="Jane Doe" helper="Shown at the top of your resume." error={errors.name} />
+        <Input label="Professional title" value={p.headline} onChange={(v) => set('headline', v)} placeholder="e.g. Software Engineer" helper="Your current or target role." />
       </FieldGrid>
 
       <FieldGrid>

@@ -139,9 +139,9 @@ function TemplateModal({ open, onClose, active, onChange }) {
 function resumeFor(id, currentActive) {
   return {
     personal_info: {
-      name: 'Alex Morgan',
-      headline: 'Senior Full-Stack Engineer',
-      email: 'alex@email.com',
+      name: 'Jane Doe',
+      headline: 'Software Engineer',
+      email: 'jane@email.com',
       phone: '(555) 123-4567',
       location: 'Austin, TX',
       links: [],

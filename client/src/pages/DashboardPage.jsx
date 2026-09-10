@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, downloadBlob } from '../api/client';
-import { makeSampleResume } from '../lib/resume';
+import { makeEmptyResume } from '../lib/resume';
 import ResumeCard from '../components/ResumeCard';
 import EmptyState from '../components/ui/EmptyState';
 import { SkeletonCard } from '../components/ui/Skeleton';
@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
   async function handleCreate() {
     try {
-      const data = await api.post('/resumes', makeSampleResume());
+      const data = await api.post('/resumes', makeEmptyResume());
       navigate(`/builder/${data.resume._id}`, { replace: true });
     } catch (err) {
       alert(err.message);

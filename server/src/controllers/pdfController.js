@@ -1,13 +1,15 @@
 const { getResumeById } = require('../services/dbService');
 const { generatePdf } = require('../services/pdfService');
+const { sanitizeResumeInput } = require('../lib/sanitize');
 
 async function exportPdf(req, res, next) {
   try {
-    const resume = await getResumeById(req.params.id, req.user.id);
-    if (!resume) {
+    const rawResume = await getResumeById(req.params.id, req.user.id);
+    if (!rawResume) {
       return res.status(404).json({ message: 'Resume not found.' });
     }
 
+    const resume = sanitizeResumeInput(rawResume);
     const pdf = await generatePdf(resume);
 
     const baseName = (resume.title || 'resume')

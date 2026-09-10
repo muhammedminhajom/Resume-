@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { ResumeProvider, useResume } from '../context/ResumeContext';
 import { api, downloadBlob } from '../api/client';
-import { makeSampleResume, makeEmptyResume } from '../lib/resume';
+import { makeEmptyResume } from '../lib/resume';
 import { normalizeResume } from '../lib/utils';
 import { validateSection, isSectionValid } from '../lib/validation';
 import StepNav from '../components/builder/StepNav';
@@ -24,8 +23,7 @@ const MIN_STEPS = 7;
 
 export default function BuilderPage() {
   const { id } = useParams();
-  const { token } = useAuth();
-  const seed = useMemo(() => (token && !id ? makeSampleResume() : makeEmptyResume()), [id, token]);
+  const seed = useMemo(() => makeEmptyResume(), []);
 
   return (
     <ResumeProvider key={id || 'new'} initial={seed}>

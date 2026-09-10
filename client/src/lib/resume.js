@@ -51,6 +51,57 @@ export function sortReverseChronological(items) {
   });
 }
 
+export function isResumeEmpty(resume) {
+  if (!resume) return true;
+  const p = resume.personal_info || {};
+  const hasPersonal = Boolean(
+    (p.name && p.name.trim()) ||
+    (p.headline && p.headline.trim()) ||
+    (p.email && p.email.trim()) ||
+    (p.phone && p.phone.trim()) ||
+    (p.location && p.location.trim()) ||
+    (p.summary && p.summary.trim()) ||
+    (Array.isArray(p.links) && p.links.some((l) => l && String(l).trim()))
+  );
+  if (hasPersonal) return false;
+
+  const hasExperience = (resume.experience || []).some(
+    (e) => (e.company && e.company.trim()) || (e.role && e.role.trim()) || (e.bullets && e.bullets.some((b) => b && b.trim()))
+  );
+  if (hasExperience) return false;
+
+  const hasProjects = (resume.projects || []).some(
+    (pr) => (pr.title && pr.title.trim()) || (pr.description && pr.description.trim()) || (pr.bullets && pr.bullets.some((b) => b && b.trim()))
+  );
+  if (hasProjects) return false;
+
+  const hasSkills = (resume.skills || []).some((s) => s && String(s).trim());
+  if (hasSkills) return false;
+
+  const hasLeadership = (resume.leadership || []).some(
+    (l) => (l.role && l.role.trim()) || (l.organization && l.organization.trim()) || (l.bullets && l.bullets.some((b) => b && b.trim()))
+  );
+  if (hasLeadership) return false;
+
+  const hasEducation = (resume.education || []).some(
+    (e) => (e.institution && e.institution.trim()) || (e.degree && e.degree.trim()) || (e.field && e.field.trim())
+  );
+  if (hasEducation) return false;
+
+  const hasCertifications = (resume.certifications || []).some(
+    (c) => (c.name && c.name.trim()) || (c.issuer && c.issuer.trim())
+  );
+  if (hasCertifications) return false;
+
+  const hasLanguages = (resume.languages || []).some((l) => {
+    if (typeof l === 'string') return Boolean(l && l.trim());
+    return Boolean((l.language && l.language.trim()) || (l.proficiency && l.proficiency.trim()));
+  });
+  if (hasLanguages) return false;
+
+  return true;
+}
+
 export function makeEmptyResume() {
   return {
     title: 'Untitled Resume',
@@ -70,7 +121,6 @@ export function makeEmptyResume() {
     skills: [],
     projects: [],
     leadership: [],
-    education: [],
     certifications: [],
     languages: [],
     section_order: [...DEFAULT_SECTION_ORDER],

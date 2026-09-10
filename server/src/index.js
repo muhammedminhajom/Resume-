@@ -16,9 +16,30 @@ const aiRoutes = require('./routes/ai');
 
 const app = express();
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-}));
+app.set('trust proxy', 1);
+
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',').map((o) => o.trim())
+  : [];
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", ...allowedOrigins, 'https://*.supabase.co'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  })
+);
 app.use(
   cors({
     origin: process.env.CLIENT_ORIGIN
@@ -113,8 +134,29 @@ function validateEnv() {
     console.error('[api] Set them in .env or your deployment environment.');
     process.exit(1);
   }
-  if (process.env.NODE_ENV === 'production' && process.env.JWT_SECRET === 'dev_secret') {
-    console.error('[api] JWT_SECRET must be set to a strong random value in production');
+
+  const KNOWN_PLACEHOLDERS = [
+    'change-this-development-secret',
+    'change_this_in_production',
+    'dev_secret',
+    'secret',
+    'your-secret',
+    'your_jwt_secret',
+    'replace_me',
+  ];
+
+  const secret = (process.env.JWT_SECRET || '').trim();
+  if (KNOWN_PLACEHOLDERS.includes(secret.toLowerCase())) {
+    console.error('[api] Security Error: JWT_SECRET matches a known insecure placeholder value.');
+    console.error('[api] Generate a cryptographically random secret with at least 64 characters.');
+    process.exit(1);
+  }
+
+  const minLength = process.env.NODE_ENV === 'production' ? 64 : 32;
+  if (secret.length < minLength) {
+    console.error(
+      `[api] Security Error: JWT_SECRET must be at least ${minLength} characters long (current length: ${secret.length}).`
+    );
     process.exit(1);
   }
 }

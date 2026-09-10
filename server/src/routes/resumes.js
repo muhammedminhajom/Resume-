@@ -15,6 +15,7 @@ const {
   compareJobMatch,
 } = require('../controllers/atsController');
 const { parseUpload } = require('../controllers/uploadController');
+const { validateUuidParam, validateResumeBody } = require('../middleware/validate');
 
 router.use(authenticate);
 
@@ -25,12 +26,12 @@ router.post('/parse-upload', parseUpload);
 
 // Core CRUD
 router.get('/', list);
-router.post('/', create);
-router.get('/:id', getOne);
-router.put('/:id', update);
-router.delete('/:id', remove);
-router.post('/:id/export', exportPdf);
-router.post('/:id/export-docx', exportDocx);
-router.post('/:id/ats-score', calculateAtsScore);
+router.post('/', validateResumeBody, create);
+router.get('/:id', validateUuidParam('id'), getOne);
+router.put('/:id', validateUuidParam('id'), validateResumeBody, update);
+router.delete('/:id', validateUuidParam('id'), remove);
+router.post('/:id/export', validateUuidParam('id'), exportPdf);
+router.post('/:id/export-docx', validateUuidParam('id'), exportDocx);
+router.post('/:id/ats-score', validateUuidParam('id'), calculateAtsScore);
 
 module.exports = router;

@@ -6,7 +6,7 @@ Full-stack resume builder web app.
 
 - **Frontend:** React (Vite), Tailwind CSS, React Router, dnd-kit
 - **Backend:** Node.js, Express
-- **Database:** MongoDB (Mongoose)
+- **Database:** Supabase (PostgreSQL)
 - **PDF:** Puppeteer (server-side HTML → PDF)
 - **DOCX:** docx library (server-side document generation)
 - **Auth:** JWT + bcrypt + Google OAuth 2.0 (`google-auth-library`, httpOnly cookies, rate limited)
@@ -24,18 +24,18 @@ Full-stack resume builder web app.
 ## Prerequisites
 
 - Node.js 18+
-- MongoDB — local MongoDB instance, MongoDB Atlas connection string, or `docker compose up -d` (requires Docker Desktop installed and running).
+- Supabase account & project (URL, Anon Key, Service Role Key, and PostgreSQL connection string)
 
 ## Setup
 
-Docker is **not required** for local development. You can run the backend and frontend directly via npm:
+You can run the backend and frontend directly via npm:
 
 ### Backend
 
 ```bash
 cd server
 npm install
-cp .env.example .env      # set MONGODB_URI, JWT_SECRET, optionally AI keys + SMTP for password reset
+cp .env.example .env      # set SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL, JWT_SECRET, etc.
 npm run dev               # http://localhost:5001
 ```
 
@@ -49,8 +49,6 @@ npm run dev               # http://localhost:5173
 
 The Vite dev server proxies `/api` to `http://localhost:5001`, so no extra
 config is needed locally.
-
-*Note on Docker:* If you want to use Docker Compose later for MongoDB or containerized services, ensure Docker Desktop is installed and running, then run `docker compose up -d`.
 
 ## Available scripts
 
@@ -163,8 +161,8 @@ GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
 ## Deploy
 
 - **Frontend:** Vercel (build `client`, set `VITE_API_URL=/api` and proxy or point to backend)
-- **Backend:** Render / Railway (start command `npm start`, env: `MONGODB_URI`, `JWT_SECRET`, `SMTP_*`)
-- **Database:** MongoDB Atlas or Supabase-compatible managed Mongo
+- **Backend:** Render / Railway (start command `npm start`, env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `CLIENT_ORIGIN`, `SMTP_*` / `RESEND_API_KEY`)
+- **Database:** Supabase (PostgreSQL)
 
 ## Google AdSense Integration & Policy Compliance
 

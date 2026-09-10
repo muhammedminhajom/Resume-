@@ -291,26 +291,30 @@ export default function ATSResumeTemplate({ resume }) {
       }}
     >
       {/* IN-BODY TOP CONTACT BLOCK */}
-      <header className="ats-header text-center pb-2">
-        <h1 className="text-[22px] font-bold tracking-tight uppercase text-black">
-          {p.name || 'Your Name'}
-        </h1>
-        {p.headline && (
-          <p className="mt-0.5 text-[13px] font-semibold text-black">
-            {p.headline}
-          </p>
-        )}
-        {contacts.length > 0 && (
-          <p className="mt-1 text-[12px] text-black">
-            {contacts.map((c, i) => (
-              <span key={i}>
-                {i > 0 && <span className="mx-2 font-bold">•</span>}
-                {c}
-              </span>
-            ))}
-          </p>
-        )}
-      </header>
+      {(p.name || p.headline || contacts.length > 0) && (
+        <header className="ats-header text-center pb-2">
+          {p.name && (
+            <h1 className="text-[22px] font-bold tracking-tight uppercase text-black">
+              {p.name}
+            </h1>
+          )}
+          {p.headline && (
+            <p className="mt-0.5 text-[13px] font-semibold text-black">
+              {p.headline}
+            </p>
+          )}
+          {contacts.length > 0 && (
+            <p className="mt-1 text-[12px] text-black">
+              {contacts.map((c, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="mx-2 font-bold">•</span>}
+                  {c}
+                </span>
+              ))}
+            </p>
+          )}
+        </header>
+      )}
 
       {/* RENDER SECTIONS IN ORDER */}
       <main className="ats-body">

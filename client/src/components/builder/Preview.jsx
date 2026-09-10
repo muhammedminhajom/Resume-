@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import ATSResumeTemplate from '../preview/ATSResumeTemplate';
 import { sanitizeObject } from '../../lib/sanitize';
-import { ATS_FONTS } from '../../lib/resume';
+import { ATS_FONTS, isResumeEmpty } from '../../lib/resume';
 
 const A4_WIDTH = 820;
 
@@ -13,6 +13,7 @@ export default function Preview({ onExport, onExportDocx, exporting, onToast }) 
   const [scrollWidth, setScrollWidth] = useState(A4_WIDTH);
 
   const safeResume = useMemo(() => sanitizeObject(resume), [resume]);
+  const isEmpty = useMemo(() => isResumeEmpty(safeResume), [safeResume]);
 
   useEffect(() => {
     function update() {
@@ -98,7 +99,8 @@ export default function Preview({ onExport, onExportDocx, exporting, onToast }) 
           {/* Direct Export Buttons: Print | Download PDF | Download DOCX */}
           <button
             onClick={() => window.print()}
-            className="btn-secondary !py-1.5 !px-2.5 text-xs"
+            disabled={isEmpty}
+            className="btn-secondary !py-1.5 !px-2.5 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             title="Print Resume"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -108,8 +110,8 @@ export default function Preview({ onExport, onExportDocx, exporting, onToast }) 
           </button>
           <button
             onClick={handleDownload}
-            disabled={exporting}
-            className="btn-primary !py-1.5 !px-3 text-xs"
+            disabled={exporting || isEmpty}
+            className="btn-primary !py-1.5 !px-3 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             title="Download PDF"
           >
             {exporting ? (
@@ -126,8 +128,8 @@ export default function Preview({ onExport, onExportDocx, exporting, onToast }) 
           </button>
           <button
             onClick={handleDocxDownload}
-            disabled={exporting}
-            className="btn-secondary !py-1.5 !px-3 text-xs"
+            disabled={exporting || isEmpty}
+            className="btn-secondary !py-1.5 !px-3 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             title="Download DOCX"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -138,31 +140,50 @@ export default function Preview({ onExport, onExportDocx, exporting, onToast }) 
         </div>
       </div>
 
-      {/* A4 preview area with realistic paper */}
+      {/* A4 preview area with realistic paper or empty state */}
       <div
         ref={scrollRef}
-        className="scrollbar-thin h-[calc(100vh-16rem)] min-h-[500px] overflow-auto rounded-card bg-surface-100 dark:bg-surface-900/60 ring-1 ring-surface-200/50 dark:ring-surface-800 p-4 sm:p-6 transition-colors"
+        className="scrollbar-thin flex min-h-[500px] h-[calc(100vh-16rem)] flex-col overflow-auto rounded-card bg-surface-100 dark:bg-surface-900/60 ring-1 ring-surface-200/50 dark:ring-surface-800 p-4 sm:p-6 transition-colors"
       >
-        <div className="print-area mx-auto transition-all duration-200">
+        {isEmpty ? (
           <div
-            className="overflow-hidden bg-white shadow-elevated ring-1 ring-surface-900/[0.08]"
-            style={{
-              width: (A4_WIDTH * effectiveZoom) / 100,
-              height: (A4_WIDTH * 1.414 * effectiveZoom) / 100,
-            }}
+            data-testid="preview-empty-state"
+            className="my-auto flex flex-col items-center justify-center p-8 text-center"
           >
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-surface-800 shadow-card ring-1 ring-surface-200 dark:ring-surface-700 text-surface-400 dark:text-surface-500">
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-surface-800 dark:text-surface-100">
+              Your resume will appear here
+            </h3>
+            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-surface-500 dark:text-surface-400">
+              Fill in your details in the sections on the left to see your ATS-formatted resume preview in real time.
+            </p>
+          </div>
+        ) : (
+          <div className="print-area mx-auto transition-all duration-200">
             <div
+              className="overflow-hidden bg-white shadow-elevated ring-1 ring-surface-900/[0.08]"
               style={{
-                transform: `scale(${effectiveZoom / 100})`,
-                transformOrigin: 'top left',
-                width: A4_WIDTH,
-                padding: '44px 48px',
+                width: (A4_WIDTH * effectiveZoom) / 100,
+                height: (A4_WIDTH * 1.414 * effectiveZoom) / 100,
               }}
             >
-              <ATSResumeTemplate resume={safeResume} />
+              <div
+                style={{
+                  transform: `scale(${effectiveZoom / 100})`,
+                  transformOrigin: 'top left',
+                  width: A4_WIDTH,
+                  padding: '44px 48px',
+                }}
+              >
+                <ATSResumeTemplate resume={safeResume} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
