@@ -18,9 +18,40 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-const allowedOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',').map((o) => o.trim())
-  : [];
+// Parse and normalize CLIENT_ORIGIN (strip whitespace, surrounding quotes, and trailing slashes)
+const rawClientOrigin = process.env.CLIENT_ORIGIN || '';
+const allowedOrigins = rawClientOrigin
+  .split(',')
+  .map((o) => o.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, ''))
+  .filter(Boolean);
+
+console.log('[CORS] Configured CLIENT_ORIGIN (raw):', process.env.CLIENT_ORIGIN);
+console.log('[CORS] Normalized allowed origins:', allowedOrigins);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.length === 0) {
+      return callback(null, true);
+    }
+
+    const cleanOrigin = origin.trim().replace(/\/+$/, '').toLowerCase();
+    const isAllowed = allowedOrigins.some((allowed) => {
+      if (allowed === '*') return true;
+      return allowed.toLowerCase() === cleanOrigin;
+    });
+
+    if (isAllowed) {
+      return callback(null, true);
+    }
+
+    console.warn(`[CORS] Blocked request from origin: "${origin}". Allowed origins:`, allowedOrigins);
+    return callback(null, false);
+  },
+  credentials: true,
+};
 
 app.use(
   helmet({
@@ -40,14 +71,8 @@ app.use(
     },
   })
 );
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN
-      ? process.env.CLIENT_ORIGIN.split(',').map((o) => o.trim())
-      : true,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 

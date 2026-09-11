@@ -19,8 +19,13 @@ export default function AdSlot({
   const adRef = useRef(null);
   const pushedRef = useRef(false);
 
-  const clientId = import.meta.env.VITE_ADSENSE_CLIENT_ID || 'ca-pub-XXXXXXXXXXXXXXXX';
-  const isPlaceholder = !slotId || slotId === 'XXXXXXXXXX' || clientId.includes('XXXXXXXXXXXXXXXX');
+  const clientId = import.meta.env.VITE_ADSENSE_CLIENT_ID || '';
+  const isRealClient =
+    typeof clientId === 'string' &&
+    clientId.startsWith('ca-pub-') &&
+    !clientId.includes('XXXX') &&
+    !clientId.includes('%');
+  const isPlaceholder = !slotId || slotId === 'XXXXXXXXXX' || !isRealClient;
   const isDev = import.meta.env.DEV;
 
   useEffect(() => {
