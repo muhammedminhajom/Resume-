@@ -97,7 +97,7 @@ describe('New Resume Creation & Blank State', () => {
     expect(screen.queryByText(/Your Name/i)).not.toBeInTheDocument();
 
     // Export buttons should be disabled
-    expect(screen.getByRole('button', { name: /Print/i })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download PDF/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /Download DOCX/i })).toBeDisabled();
   });
@@ -132,7 +132,7 @@ describe('New Resume Creation & Blank State', () => {
     expect(screen.getByText('Cybersecurity Engineer')).toBeInTheDocument();
 
     // Export buttons should be enabled
-    expect(screen.getByRole('button', { name: /Print/i })).not.toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download PDF/i })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /Download DOCX/i })).not.toBeDisabled();
   });

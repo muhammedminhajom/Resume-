@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon -e js,json,env src/index.js",
+    "postinstall": "npx puppeteer browsers install chrome",
     "lint": "eslint src --ext js",
     "lint:fix": "eslint src --ext js --fix"
   },

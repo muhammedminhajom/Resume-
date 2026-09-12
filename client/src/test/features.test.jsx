@@ -27,7 +27,7 @@ describe('Three-Dot Menu on ResumeCard', () => {
         resume={sampleResume}
         onEdit={onEdit}
         onDelete={onDelete}
-        onDuplicate={onDuplicate}
+        onView={onDuplicate}
         onRename={onRename}
         onDownload={onDownload}
       />
@@ -45,16 +45,17 @@ describe('Three-Dot Menu on ResumeCard', () => {
     const menu = screen.getByRole('menu');
     expect(menu).toBeInTheDocument();
 
-    // Check actions: Rename, Duplicate, Download PDF, Delete
+    // Check actions: Rename, View, Download PDF, Delete
     expect(screen.getByRole('menuitem', { name: /Rename/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /Duplicate/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /View/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /Duplicate/i })).not.toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /Download PDF/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /Delete/i })).toBeInTheDocument();
   });
 
   it('fires callbacks when menu items are clicked', () => {
     const onRename = vi.fn();
-    const onDuplicate = vi.fn();
+    const onView = vi.fn();
     const onDownload = vi.fn();
     const onDelete = vi.fn();
 
@@ -63,7 +64,7 @@ describe('Three-Dot Menu on ResumeCard', () => {
         resume={sampleResume}
         onEdit={vi.fn()}
         onDelete={onDelete}
-        onDuplicate={onDuplicate}
+        onView={onView}
         onRename={onRename}
         onDownload={onDownload}
       />
@@ -79,9 +80,9 @@ describe('Three-Dot Menu on ResumeCard', () => {
     // Open menu again
     fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
 
-    // Click Duplicate
-    fireEvent.click(screen.getByRole('menuitem', { name: /Duplicate/i }));
-    expect(onDuplicate).toHaveBeenCalledWith(sampleResume);
+    // Click View
+    fireEvent.click(screen.getByRole('menuitem', { name: /View/i }));
+    expect(onView).toHaveBeenCalledWith(sampleResume);
 
     // Open menu again
     fireEvent.click(screen.getByLabelText(/More actions for Software Engineer Resume/i));
@@ -303,6 +304,83 @@ describe('Google Sign-In Integration', () => {
     expect(screen.getByLabelText(/Full name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Password/i)).toBeInTheDocument();
+  });
+});
+
+describe('Dashboard View Modal and Builder Toolbar & Finish Actions', () => {
+  const mockResume = {
+    _id: 'resume-view-123',
+    title: 'Software Engineer Resume',
+    template: 'modern',
+    updated_at: new Date().toISOString(),
+    personal_info: { name: 'Jane Doe', email: 'jane@example.com', headline: 'Staff Engineer' },
+    skills: ['JavaScript', 'React', 'Node.js'],
+    experience: [],
+    education: [],
+    certifications: [],
+    languages: [],
+    leadership: [],
+    projects: [],
+  };
+
+  it('DashboardPage displays read-only View modal when View is selected from ResumeCard', async () => {
+    const { default: DashboardPage } = await import('../pages/DashboardPage');
+    const { BrowserRouter } = await import('react-router-dom');
+    const { api } = await import('../api/client');
+
+    vi.spyOn(api, 'get').mockResolvedValue({
+      resumes: [mockResume],
+    });
+
+    render(
+      <BrowserRouter>
+        <DashboardPage />
+      </BrowserRouter>
+    );
+
+    const titleEl = await screen.findByText('Software Engineer Resume');
+    expect(titleEl).toBeInTheDocument();
+
+    // Open three-dot menu
+    const moreActionsBtn = screen.getByLabelText(/More actions for Software Engineer Resume/i);
+    fireEvent.click(moreActionsBtn);
+
+    // Duplicate should NOT exist
+    expect(screen.queryByRole('menuitem', { name: /Duplicate/i })).not.toBeInTheDocument();
+
+    // View should exist
+    const viewBtn = screen.getByRole('menuitem', { name: /View/i });
+    expect(viewBtn).toBeInTheDocument();
+
+    // Click View
+    fireEvent.click(viewBtn);
+
+    // Modal should appear with resume title and ATS template preview
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(screen.getByText('Read-only preview of your formatted resume.')).toBeInTheDocument();
+    const closeButtons = screen.getAllByRole('button', { name: /Close/i });
+    expect(closeButtons.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('button', { name: /Download PDF/i })).toBeInTheDocument();
+
+    // Close modal
+    fireEvent.click(closeButtons[closeButtons.length - 1]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Preview toolbar does not contain Print button, only Download PDF and Download DOCX', async () => {
+    const { default: Preview } = await import('../components/builder/Preview');
+    const { ResumeProvider } = await import('../context/ResumeContext');
+
+    render(
+      <ResumeProvider initial={mockResume}>
+        <Preview />
+      </ResumeProvider>
+    );
+
+    expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Download PDF/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Download DOCX/i })).toBeInTheDocument();
   });
 });
 

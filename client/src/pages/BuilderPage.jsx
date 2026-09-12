@@ -348,24 +348,41 @@ function BuilderEdition({ id }) {
                 </svg>
                 Back
               </button>
-              <button
-                onClick={() => {
-                  const errors = validateSection(resume, steps[currentStep].key);
-                  if (Object.keys(errors).length > 0) {
-                    setValidationErrors(errors);
-                    return;
-                  }
-                  setValidationErrors({});
-                  setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
-                }}
-                disabled={currentStep === steps.length - 1 || !isSectionValid(resume, steps[currentStep].key)}
-                className="btn-primary disabled:opacity-40"
-              >
-                Next
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </button>
+              {currentStep === steps.length - 1 && completion === 100 ? (
+                <button
+                  onClick={async () => {
+                    const res = await save();
+                    if (res && res.success !== false) {
+                      navigate('/dashboard');
+                    }
+                  }}
+                  className="btn-primary"
+                >
+                  Finish
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    const errors = validateSection(resume, steps[currentStep].key);
+                    if (Object.keys(errors).length > 0) {
+                      setValidationErrors(errors);
+                      return;
+                    }
+                    setValidationErrors({});
+                    setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
+                  }}
+                  disabled={currentStep === steps.length - 1 || !isSectionValid(resume, steps[currentStep].key)}
+                  className="btn-primary disabled:opacity-40"
+                >
+                  Next
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>

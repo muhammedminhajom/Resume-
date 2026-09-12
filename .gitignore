@@ -16,3 +16,5 @@ server/.env*
 .vscode/
 backups/
 server/backups/
+.cache/
+server/.cache/

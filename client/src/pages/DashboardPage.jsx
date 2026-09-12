@@ -6,6 +6,7 @@ import ResumeCard from '../components/ResumeCard';
 import EmptyState from '../components/ui/EmptyState';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
+import ATSResumeTemplate from '../components/preview/ATSResumeTemplate';
 
 function formatRelative(value) {
   if (!value) return 'Never';
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [renameLoading, setRenameLoading] = useState(false);
   const [deletingResume, setDeletingResume] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [viewingResume, setViewingResume] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,18 +121,6 @@ export default function DashboardPage() {
       downloadBlob(blob, `${base}.pdf`);
     } catch (err) {
       alert(err.message || 'Failed to download PDF.');
-    }
-  }
-
-  async function handleDuplicate(resume) {
-    try {
-      const data = await api.post('/resumes', {
-        ...resume,
-        title: `${resume.title} (copy)`,
-      });
-      navigate(`/builder/${data.resume._id}`, { replace: true });
-    } catch (err) {
-      alert(err.message);
     }
   }
 
@@ -297,13 +287,49 @@ export default function DashboardPage() {
                   setRenameTitle(resume.title || '');
                 }}
                 onDelete={(resume) => setDeletingResume(resume)}
-                onDuplicate={() => handleDuplicate(r)}
+                onView={(resume) => setViewingResume(resume)}
                 onDownload={() => handleDownload(r)}
               />
             ))}
           </div>
         </div>
       )}
+
+      {/* View (Read-Only Preview) Modal */}
+      <Modal
+        open={Boolean(viewingResume)}
+        onClose={() => setViewingResume(null)}
+        title={viewingResume?.title || 'Resume Preview'}
+        subtitle="Read-only preview of your formatted resume."
+        maxWidth="max-w-4xl"
+      >
+        <div className="flex flex-col items-center">
+          <div className="max-h-[72vh] w-full overflow-y-auto rounded-lg border border-surface-200 bg-surface-100 p-4 sm:p-6 dark:border-surface-700 dark:bg-surface-950 flex justify-center">
+            <div className="w-full max-w-[210mm] bg-white text-surface-900 shadow-md rounded p-1">
+              {viewingResume && <ATSResumeTemplate resume={viewingResume} />}
+            </div>
+          </div>
+          <div className="mt-4 flex w-full items-center justify-between border-t border-surface-100 pt-4 dark:border-surface-800">
+            <button
+              type="button"
+              onClick={() => handleDownload(viewingResume)}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Download PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewingResume(null)}
+              className="btn-primary"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Rename Modal */}
       <Modal

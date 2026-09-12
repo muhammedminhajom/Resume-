@@ -22,7 +22,7 @@ function formatRelative(value) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate, onRename, onDownload }) {
+export default function ResumeCard({ resume, onEdit, onDelete, onView, onRename, onDownload }) {
   const meta = TEMPLATE_META[resume.template] || TEMPLATE_META.modern;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -114,21 +114,22 @@ export default function ResumeCard({ resume, onEdit, onDelete, onDuplicate, onRe
                     Rename
                   </button>
                 )}
-                {onDuplicate && (
+                {onView && (
                   <button
                     type="button"
                     role="menuitem"
                     onClick={(e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      onDuplicate(resume);
+                      onView(resume);
                     }}
                     className="flex w-full items-center gap-2.5 border-t border-surface-100 dark:border-surface-700 px-4 py-2.5 text-left text-sm text-surface-700 dark:text-surface-200 transition-colors hover:bg-surface-50 dark:hover:bg-surface-700"
                   >
                     <svg className="h-4 w-4 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Duplicate
+                    View
                   </button>
                 )}
                 {onDownload && (
