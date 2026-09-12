@@ -29,11 +29,10 @@ export default function TemplateSwitcher({ compact = false }) {
                   setSection('template', opt.id);
                 }}
                 aria-pressed={isActive}
-                className={`flex items-center justify-between rounded-button border px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${
-                  isActive
+                className={`flex items-center justify-between rounded-button border px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 ${isActive
                     ? 'border-brand-500 bg-brand-50 text-brand-700 ring-2 ring-brand-500/15'
                     : 'border-surface-200 text-surface-600 hover:border-surface-300 hover:bg-surface-50'
-                }`}
+                  }`}
               >
                 {opt.label}
                 {isActive && (
@@ -100,11 +99,10 @@ function TemplateModal({ open, onClose, active, onChange }) {
                 onClose();
               }}
               aria-pressed={isActive}
-              className={`group relative flex flex-col overflow-hidden rounded-card border text-left transition-all duration-200 ${
-                isActive
+              className={`group relative flex flex-col overflow-hidden rounded-card border text-left transition-all duration-200 ${isActive
                   ? 'border-brand-500 ring-2 ring-brand-500/20'
                   : 'border-surface-200 hover:border-surface-300 hover:shadow-card-hover'
-              }`}
+                }`}
             >
               {/* Preview */}
               <div className="relative h-52 overflow-hidden border-b border-surface-100 bg-surface-50">
@@ -139,19 +137,19 @@ function TemplateModal({ open, onClose, active, onChange }) {
 function resumeFor(id, currentActive) {
   return {
     personal_info: {
-      name: 'Jane Doe',
+      name: 'Mohamed ',
       headline: 'Software Engineer',
-      email: 'jane@email.com',
-      phone: '(555) 123-4567',
-      location: 'Austin, TX',
+      email: 'muhammed@gmail.com',
+      phone: '(+91)9087654321',
+      location: 'Banglore, Indai',
       links: [],
     },
-    education: [{ institution: 'University of Texas', degree: 'B.S.', field: 'Computer Science', start_date: '2014', end_date: '2018' }],
+    education: [{ institution: 'University of Kerala', degree: 'BTech', field: 'Computer Science', start_date: '2014', end_date: '2018' }],
     experience: [
       {
-        company: 'Acme Corp',
-        role: 'Full-Stack Engineer',
-        start_date: '2021',
+        company: 'TCS',
+        role: 'Software Engineer',
+        start_date: '2025',
         end_date: 'Present',
         bullets: [
           'Built a customer analytics dashboard used by 40k+ monthly users',
