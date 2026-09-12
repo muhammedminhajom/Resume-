@@ -94,6 +94,9 @@ export default function LeadershipStep({ errors = [] }) {
                 <input
                   value={b}
                   onChange={(e) => setBullet(key, i, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ') e.stopPropagation();
+                  }}
                   placeholder="Led 15+ student volunteers and organized campus hackathon"
                   className="input-field"
                   aria-label={`Bullet ${i + 1}`}

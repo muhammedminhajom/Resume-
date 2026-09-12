@@ -11,12 +11,13 @@ import {
   verticalListSortingStrategy,
   useSortable,
   arrayMove,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DragHandle } from './fields';
 
-function SortableEntry({ id, children, isDragging }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+function SortableEntry({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -27,18 +28,20 @@ function SortableEntry({ id, children, isDragging }) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`flex items-center gap-3 rounded-input border bg-white px-3.5 py-2.5 text-sm font-medium shadow-card transition-all ${
-        isDragging
-          ? 'z-10 shadow-elevated ring-2 ring-brand-500/30 cursor-grabbing'
-          : 'cursor-grab hover:border-brand-300 hover:shadow-card-hover active:cursor-grabbing'
+      className={`flex items-start gap-2.5 transition-all ${
+        isDragging ? 'z-10 opacity-75 ring-2 ring-brand-500/30' : ''
       }`}
-      role="button"
-      aria-roledescription="draggable"
-      aria-label="Drag to reorder"
     >
-      <DragHandle isDragging={isDragging} />
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="mt-3.5 flex h-8 w-8 shrink-0 cursor-grab items-center justify-center rounded-button border border-surface-200 bg-white text-surface-400 shadow-card transition-colors hover:border-brand-300 hover:bg-surface-50 hover:text-surface-600 active:cursor-grabbing dark:border-surface-700 dark:bg-surface-800 dark:text-surface-400 dark:hover:border-surface-600 dark:hover:bg-surface-700 touch-none"
+        aria-roledescription="draggable"
+        aria-label="Drag to reorder entry"
+      >
+        <DragHandle isDragging={isDragging} />
+      </button>
       <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
@@ -47,7 +50,9 @@ function SortableEntry({ id, children, isDragging }) {
 export function EntryReorder({ items, renderItem, onChange }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
   function handleDragEnd(event) {
@@ -63,7 +68,7 @@ export function EntryReorder({ items, renderItem, onChange }) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items.map((item) => item._id || item._key)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {items.map((item, index) => {
             const id = item._id || item._key;
             return (

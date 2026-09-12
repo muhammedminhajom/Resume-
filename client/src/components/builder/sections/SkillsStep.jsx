@@ -25,6 +25,9 @@ export default function SkillsStep() {
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
+          if (e.key === ' ') {
+            e.stopPropagation();
+          }
           if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             commit();

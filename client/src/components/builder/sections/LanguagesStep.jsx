@@ -47,6 +47,9 @@ export default function LanguagesStep() {
               value={languageName}
               onChange={(e) => setLanguageName(e.target.value)}
               onKeyDown={(e) => {
+                if (e.key === ' ') {
+                  e.stopPropagation();
+                }
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleAdd();

@@ -8,7 +8,7 @@ const inputError =
 
 const inputMixin = `rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-500 dark:hover:border-surface-600 dark:focus:border-brand-400 dark:focus:ring-brand-500/25`;
 
-export function Input({ label, value, onChange, placeholder, type = 'text', className = '', helper, error }) {
+export function Input({ label, value, onChange, placeholder, type = 'text', className = '', helper, error, onKeyDown, ...props }) {
   return (
     <label className={`block ${className}`}>
       {label && <span className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">{label}</span>}
@@ -16,9 +16,16 @@ export function Input({ label, value, onChange, placeholder, type = 'text', clas
         type={type}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === ' ') {
+            e.stopPropagation();
+          }
+          onKeyDown?.(e);
+        }}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
         className={`${inputMixin} ${error ? inputError : ''}`}
+        {...props}
       />
       {error && <span className="mt-1 block text-xs text-red-600 dark:text-red-400">{error}</span>}
       {helper && !error && <span className="mt-1 block text-xs text-surface-400 dark:text-surface-500">{helper}</span>}
@@ -26,16 +33,23 @@ export function Input({ label, value, onChange, placeholder, type = 'text', clas
   );
 }
 
-export function Textarea({ label, value, onChange, placeholder, rows = 3, className = '' }) {
+export function Textarea({ label, value, onChange, placeholder, rows = 3, className = '', onKeyDown, ...props }) {
   return (
     <label className={`block ${className}`}>
       {label && <span className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">{label}</span>}
       <textarea
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === ' ') {
+            e.stopPropagation();
+          }
+          onKeyDown?.(e);
+        }}
         placeholder={placeholder}
         rows={rows}
         className={`${inputMixin} resize-y`}
+        {...props}
       />
     </label>
   );
@@ -210,6 +224,9 @@ export function TagInput({ value, onChange, placeholder, label }) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
+            if (e.key === ' ') {
+              e.stopPropagation();
+            }
             if (e.key === 'Enter' || e.key === ',') {
               e.preventDefault();
               commit();

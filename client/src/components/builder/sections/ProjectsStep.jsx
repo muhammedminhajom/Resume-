@@ -22,6 +22,9 @@ function TechPicker({ value, onChange }) {
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
+          if (e.key === ' ') {
+            e.stopPropagation();
+          }
           if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
             commit();
@@ -114,6 +117,9 @@ export default function ProjectsStep({ errors = [] }) {
                 <input
                   value={b}
                   onChange={(e) => setBullet(key, i, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ') e.stopPropagation();
+                  }}
                   placeholder="Built an analytics dashboard used by 40k+ users"
                   className="input-field"
                   aria-label={`Bullet ${i + 1}`}
