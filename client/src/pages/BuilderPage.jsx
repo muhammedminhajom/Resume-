@@ -38,6 +38,7 @@ function BuilderEdition({ id }) {
 
   const [loading, setLoading] = useState(Boolean(id));
   const [loadError, setLoadError] = useState('');
+  const [fetchTrigger, setFetchTrigger] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -50,24 +51,51 @@ function BuilderEdition({ id }) {
   const lastSavedResume = useRef(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      lastSavedResume.current = JSON.stringify(resume);
+      return;
+    }
+    let isCancelled = false;
     (async function initialLoad() {
       setLoading(true);
       setLoadError('');
       try {
         const data = await api.get(`/resumes/${id}`);
-        setResume(normalizeResume(data.resume));
+        if (!isCancelled) {
+          if (!data || !data.resume) {
+            throw new Error('Resume not found.');
+          }
+          const normalized = normalizeResume(data.resume);
+          setResume(normalized);
+          lastSavedResume.current = JSON.stringify(normalized);
+        }
       } catch (err) {
-        setLoadError(err.status === 404 ? 'This resume no longer exists.' : 'Unable to load this resume.');
+        if (!isCancelled) {
+          setLoadError(err.status === 404 ? 'This resume no longer exists.' : (err.message || 'Unable to load this resume.'));
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     })();
-  }, [id, setResume]);
+    return () => {
+      isCancelled = true;
+    };
+  }, [id, fetchTrigger, setResume]);
 
   // Autosave: debounced 1.5s on field change
   useEffect(() => {
-    if (!resume || saving || savedState === 'saving') return;
+    // Never autosave while loading or if there's a load error
+    if (loading || loadError || !resume || saving || savedState === 'saving') return;
+    // If we are editing an existing resume (:id in URL), NEVER save until resume._id matches id
+    if (id && (!resume._id || resume._id !== id)) return;
+    // If no changes have been made since last save/load, do nothing
+    if (!lastSavedResume.current) {
+      lastSavedResume.current = JSON.stringify(resume);
+      return;
+    }
     if (lastSavedResume.current === JSON.stringify(resume)) return;
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
@@ -76,12 +104,13 @@ function BuilderEdition({ id }) {
       const body = serialize(resume);
       try {
         setSavedState('saving');
-        const data = resume._id
-          ? await api.put(`/resumes/${resume._id}`, body)
+        const targetId = resume._id || id;
+        const data = targetId
+          ? await api.put(`/resumes/${targetId}`, body)
           : await api.post('/resumes', body);
-        const nextId = data.resume._id;
-        if (!resume._id) {
-          setResume((prev) => ({ ...prev, _id: nextId }));
+        const nextId = data.resume._id || data.resume.id;
+        if (!resume._id && nextId) {
+          setResume((prev) => ({ ...prev, _id: nextId, id: nextId }));
           navigate(`/builder/${nextId}`, { replace: true });
         }
         lastSavedResume.current = JSON.stringify(resume);
@@ -96,7 +125,7 @@ function BuilderEdition({ id }) {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [resume, resume._id, saving, savedState, navigate, setResume]);
+  }, [resume, resume._id, id, loading, loadError, saving, savedState, navigate, setResume]);
 
   // Clear validation errors when user makes changes
   const prevResumeRef = useRef(resume);
@@ -132,14 +161,16 @@ function BuilderEdition({ id }) {
     setSavedState('saving');
     try {
       const body = serialize(resume);
-      const data = resume._id
-        ? await api.put(`/resumes/${resume._id}`, body)
+      const targetId = resume._id || id;
+      const data = targetId
+        ? await api.put(`/resumes/${targetId}`, body)
         : await api.post('/resumes', body);
-      const nextId = data.resume._id;
-      if (!resume._id) {
-        setResume((prev) => ({ ...prev, _id: nextId }));
+      const nextId = data.resume._id || data.resume.id;
+      if (!resume._id && nextId) {
+        setResume((prev) => ({ ...prev, _id: nextId, id: nextId }));
         navigate(`/builder/${nextId}`, { replace: true });
       }
+      lastSavedResume.current = JSON.stringify(resume);
       setSavedState('saved');
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => setSavedState('idle'), 3000);
@@ -211,9 +242,16 @@ function BuilderEdition({ id }) {
 
   if (loadError) {
     return (
-      <div className="mx-auto mt-16 max-w-md rounded-card border border-red-200 bg-red-50 p-6 text-center">
+      <div className="mx-auto mt-16 max-w-md rounded-card border border-red-200 bg-red-50 p-6 text-center shadow-card">
         <p className="text-sm font-medium text-red-700">{loadError}</p>
-        <button onClick={() => navigate('/')} className="btn-primary mt-4">Back to dashboard</button>
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <button onClick={() => setFetchTrigger((c) => c + 1)} className="btn-secondary text-xs">
+            Try again
+          </button>
+          <button onClick={() => navigate('/dashboard')} className="btn-primary text-xs">
+            Back to dashboard
+          </button>
+        </div>
       </div>
     );
   }
@@ -391,30 +429,6 @@ function BuilderEdition({ id }) {
         <div className={`${mobileView === 'edit' ? 'hidden' : 'block'} xl:block`}>
           <Preview
             onExport={handleExport}
-            onExportDocx={async () => {
-              setExporting(true);
-              try {
-                let resumeId = resume._id;
-                if (!resumeId) {
-                  const res = await save();
-                  if (!res.success) return { success: false, message: res.message };
-                  resumeId = res.id;
-                }
-                const blob = await api.exportDocx(resumeId);
-                const base =
-                  (resume.title || 'resume')
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '')
-                    .slice(0, 60) || 'resume';
-                downloadBlob(blob, `${base}.docx`);
-                return { success: true };
-              } catch (err) {
-                return { success: false, message: err.message || 'DOCX export failed.' };
-              } finally {
-                setExporting(false);
-              }
-            }}
             exporting={exporting}
             onToast={notify}
           />

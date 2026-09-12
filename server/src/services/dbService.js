@@ -89,16 +89,20 @@ async function listResumes(userId) {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('resumes')
-    .select('id, title, template, section_order, created_at, updated_at')
+    .select('id, title, template, font, section_order, created_at, updated_at, personal_info(full_name, title)')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
 
-  // Add _id for frontend backwards-compatibility
+  // Add _id and personal_info for frontend backwards-compatibility
   return (data || []).map((r) => ({
     _id: r.id,
     ...r,
+    personal_info: {
+      name: r.personal_info?.full_name || '',
+      headline: r.personal_info?.title || '',
+    },
   }));
 }
 

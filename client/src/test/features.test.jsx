@@ -328,8 +328,14 @@ describe('Dashboard View Modal and Builder Toolbar & Finish Actions', () => {
     const { BrowserRouter } = await import('react-router-dom');
     const { api } = await import('../api/client');
 
-    vi.spyOn(api, 'get').mockResolvedValue({
-      resumes: [mockResume],
+    vi.spyOn(api, 'get').mockImplementation(async (path) => {
+      if (path === '/resumes') {
+        return { resumes: [mockResume] };
+      }
+      if (path === `/resumes/${mockResume._id}`) {
+        return { resume: mockResume };
+      }
+      return {};
     });
 
     render(
@@ -368,7 +374,7 @@ describe('Dashboard View Modal and Builder Toolbar & Finish Actions', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('Preview toolbar does not contain Print button, only Download PDF and Download DOCX', async () => {
+  it('Preview toolbar contains Download PDF and no Print or Download DOCX buttons', async () => {
     const { default: Preview } = await import('../components/builder/Preview');
     const { ResumeProvider } = await import('../context/ResumeContext');
 
@@ -379,8 +385,69 @@ describe('Dashboard View Modal and Builder Toolbar & Finish Actions', () => {
     );
 
     expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Download DOCX/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download PDF/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Download DOCX/i })).toBeInTheDocument();
+  });
+
+  it('BuilderPage fetches and populates saved resume matching URL id without wiping data', async () => {
+    const { default: BuilderPage } = await import('../pages/BuilderPage');
+    const { MemoryRouter, Routes, Route } = await import('react-router-dom');
+    const { api } = await import('../api/client');
+
+    const sampleExisting = {
+      _id: 'resume-edit-999',
+      id: 'resume-edit-999',
+      title: 'Principal Architect Resume',
+      template: 'Arial',
+      font: 'Arial',
+      personal_info: {
+        name: 'Ada Lovelace',
+        headline: 'Lead Computing Architect',
+        email: 'ada@example.com',
+        phone: '1234567890',
+        location: 'London, UK',
+        links: [],
+        summary: 'First computer programmer.',
+      },
+      experience: [],
+      projects: [],
+      skills: ['Algorithms', 'Mathematics'],
+      leadership: [],
+      education: [],
+      certifications: [],
+      languages: [{ _id: 'lang-1', language: 'English', proficiency: 'Native' }],
+    };
+
+    const getSpy = vi.spyOn(api, 'get').mockImplementation(async (path) => {
+      if (path === '/resumes/resume-edit-999') {
+        return { resume: sampleExisting };
+      }
+      return {};
+    });
+
+    const postSpy = vi.spyOn(api, 'post');
+
+    render(
+      <MemoryRouter initialEntries={['/builder/resume-edit-999']}>
+        <Routes>
+          <Route path="/builder/:id" element={<BuilderPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    // Should fetch the existing resume
+    expect(getSpy).toHaveBeenCalledWith('/resumes/resume-edit-999');
+
+    // Title should be populated with the saved title
+    const titleInput = await screen.findByDisplayValue('Principal Architect Resume');
+    expect(titleInput).toBeInTheDocument();
+
+    // Full name and headline inputs should be populated with saved data
+    expect(await screen.findByDisplayValue('Ada Lovelace')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('Lead Computing Architect')).toBeInTheDocument();
+
+    // Autosave should NOT create a new resume record
+    expect(postSpy).not.toHaveBeenCalled();
   });
 });
 

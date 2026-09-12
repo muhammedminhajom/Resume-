@@ -98,8 +98,8 @@ describe('New Resume Creation & Blank State', () => {
 
     // Export buttons should be disabled
     expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Download DOCX/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download PDF/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /Download DOCX/i })).toBeDisabled();
   });
 
   it('ATSResumeTemplate does not render "Your Name" or fake sample data when empty', () => {
@@ -133,7 +133,7 @@ describe('New Resume Creation & Blank State', () => {
 
     // Export buttons should be enabled
     expect(screen.queryByRole('button', { name: /Print/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Download DOCX/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download PDF/i })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: /Download DOCX/i })).not.toBeDisabled();
   });
 });

@@ -7,6 +7,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
 import ATSResumeTemplate from '../components/preview/ATSResumeTemplate';
+import { normalizeResume } from '../lib/utils';
 
 function formatRelative(value) {
   if (!value) return 'Never';
@@ -52,7 +53,27 @@ export default function DashboardPage() {
   const [deletingResume, setDeletingResume] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [viewingResume, setViewingResume] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewError, setViewError] = useState('');
   const navigate = useNavigate();
+
+  async function handleView(resumeSummary) {
+    const resumeId = resumeSummary?._id || resumeSummary?.id;
+    if (!resumeId) return;
+    setViewModalOpen(true);
+    setViewLoading(true);
+    setViewError('');
+    setViewingResume(resumeSummary);
+    try {
+      const data = await api.get(`/resumes/${resumeId}`);
+      setViewingResume(normalizeResume(data.resume));
+    } catch (err) {
+      setViewError(err.message || 'Failed to load resume details.');
+    } finally {
+      setViewLoading(false);
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -279,15 +300,15 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((r) => (
               <ResumeCard
-                key={r._id}
+                key={r._id || r.id}
                 resume={r}
-                onEdit={() => navigate(`/builder/${r._id}`)}
+                onEdit={() => navigate(`/builder/${r._id || r.id}`)}
                 onRename={(resume) => {
                   setRenamingResume(resume);
                   setRenameTitle(resume.title || '');
                 }}
                 onDelete={(resume) => setDeletingResume(resume)}
-                onView={(resume) => setViewingResume(resume)}
+                onView={() => handleView(r)}
                 onDownload={() => handleDownload(r)}
               />
             ))}
@@ -297,23 +318,46 @@ export default function DashboardPage() {
 
       {/* View (Read-Only Preview) Modal */}
       <Modal
-        open={Boolean(viewingResume)}
-        onClose={() => setViewingResume(null)}
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setViewingResume(null);
+          setViewError('');
+        }}
         title={viewingResume?.title || 'Resume Preview'}
         subtitle="Read-only preview of your formatted resume."
         maxWidth="max-w-4xl"
       >
         <div className="flex flex-col items-center">
-          <div className="max-h-[72vh] w-full overflow-y-auto rounded-lg border border-surface-200 bg-surface-100 p-4 sm:p-6 dark:border-surface-700 dark:bg-surface-950 flex justify-center">
-            <div className="w-full max-w-[210mm] bg-white text-surface-900 shadow-md rounded p-1">
-              {viewingResume && <ATSResumeTemplate resume={viewingResume} />}
-            </div>
+          <div className="max-h-[72vh] min-h-[420px] w-full overflow-y-auto rounded-lg border border-surface-200 bg-surface-100 p-4 sm:p-6 dark:border-surface-700 dark:bg-surface-950 flex justify-center items-start">
+            {viewLoading ? (
+              <div className="flex h-64 w-full flex-col items-center justify-center gap-3">
+                <div className="h-9 w-9 animate-spin rounded-full border-2 border-surface-300 border-t-brand-600 dark:border-surface-700" />
+                <p className="text-sm font-medium text-surface-500 dark:text-surface-400">Loading resume preview...</p>
+              </div>
+            ) : viewError ? (
+              <div className="my-auto text-center p-6">
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">{viewError}</p>
+                <button
+                  type="button"
+                  onClick={() => handleView(viewingResume)}
+                  className="btn-secondary mt-3 text-xs"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : viewingResume ? (
+              <div className="w-full max-w-[210mm] bg-white text-surface-900 shadow-md rounded p-1">
+                <ATSResumeTemplate resume={viewingResume} />
+              </div>
+            ) : null}
           </div>
           <div className="mt-4 flex w-full items-center justify-between border-t border-surface-100 pt-4 dark:border-surface-800">
             <button
               type="button"
               onClick={() => handleDownload(viewingResume)}
-              className="btn-secondary flex items-center gap-2"
+              disabled={viewLoading || Boolean(viewError) || !viewingResume}
+              className="btn-secondary flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -322,7 +366,11 @@ export default function DashboardPage() {
             </button>
             <button
               type="button"
-              onClick={() => setViewingResume(null)}
+              onClick={() => {
+                setViewModalOpen(false);
+                setViewingResume(null);
+                setViewError('');
+              }}
               className="btn-primary"
             >
               Close
