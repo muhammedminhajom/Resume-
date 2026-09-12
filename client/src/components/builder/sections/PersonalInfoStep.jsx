@@ -25,18 +25,45 @@ export default function PersonalInfoStep({ errors = {} }) {
       />
 
       <FieldGrid>
-        <Input label="Full name" value={p.name} onChange={(v) => set('name', v)} placeholder="Jane Doe" helper="Shown at the top of your resume." error={errors.name} />
-        <Input label="Professional title" value={p.headline} onChange={(v) => set('headline', v)} placeholder="e.g. Software Engineer" helper="Your current or target role." />
+        <Input
+          label="Full name"
+          value={p.name}
+          onChange={(v) => set('name', v)}
+          placeholder="Jane Doe"
+          error={errors.name}
+        />
+        <Input
+          label="Professional title"
+          value={p.headline}
+          onChange={(v) => set('headline', v)}
+          placeholder="e.g. Software Engineer"
+        />
       </FieldGrid>
 
       <FieldGrid>
-        <Input label="Email" value={p.email} onChange={(v) => set('email', v)} type="email" placeholder="you@email.com" error={errors.email} />
-        <Input label="Phone" value={p.phone} onChange={(v) => set('phone', v)} placeholder="(555) 123-4567" error={errors.phone} />
+        <Input
+          label="Email"
+          value={p.email}
+          onChange={(v) => set('email', v)}
+          type="email"
+          placeholder="you@email.com"
+          error={errors.email}
+        />
+        <Input
+          label="Phone"
+          value={p.phone}
+          onChange={(v) => set('phone', v)}
+          placeholder="(555) 123-4567"
+          error={errors.phone}
+        />
       </FieldGrid>
 
-      <FieldGrid>
-        <Input label="Location" value={p.location} onChange={(v) => set('location', v)} placeholder="City, Country (e.g. Austin, TX)" helper="City, Country or City, State" />
-      </FieldGrid>
+      <Input
+        label="Location"
+        value={p.location}
+        onChange={(v) => set('location', v)}
+        placeholder="City, Country (e.g. Austin, TX)"
+      />
 
       <TagInput
         label="Links (GitHub, LinkedIn, Portfolio…)"

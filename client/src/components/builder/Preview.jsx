@@ -120,19 +120,21 @@ export default function Preview({ onExport, exporting, onToast }) {
         {isEmpty ? (
           <div
             data-testid="preview-empty-state"
-            className="my-auto flex flex-col items-center justify-center p-8 text-center"
+            className="my-auto flex flex-col items-center justify-center p-4 text-center"
           >
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-surface-800 shadow-card ring-1 ring-surface-200 dark:ring-surface-700 text-surface-400 dark:text-surface-500">
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
+            <div className="mx-auto flex w-full max-w-sm flex-col items-center rounded-2xl border border-dashed border-surface-300 dark:border-surface-700 bg-white/60 dark:bg-surface-850/60 p-6 sm:p-8 shadow-sm backdrop-blur-sm">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-surface-800 text-surface-400 dark:text-surface-500 shadow-card ring-1 ring-surface-200 dark:ring-surface-700">
+                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-surface-800 dark:text-surface-100">
+                Your resume will appear here
+              </h3>
+              <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-surface-500 dark:text-surface-400">
+                Fill in your details in the sections on the left to see your ATS-formatted resume preview in real time.
+              </p>
             </div>
-            <h3 className="text-base font-semibold text-surface-800 dark:text-surface-100">
-              Your resume will appear here
-            </h3>
-            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-surface-500 dark:text-surface-400">
-              Fill in your details in the sections on the left to see your ATS-formatted resume preview in real time.
-            </p>
           </div>
         ) : (
           <div className="print-area mx-auto transition-all duration-200">

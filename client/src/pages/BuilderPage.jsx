@@ -325,18 +325,12 @@ function BuilderEdition({ id }) {
           onClick={() => setMobileView('preview')}
           className={`rounded-button py-2 text-sm font-medium transition-colors ${mobileView === 'preview' ? 'bg-brand-600 text-white' : 'text-surface-500 dark:text-surface-400'}`}
         >
-          Edit
-        </button>
-        <button
-          onClick={() => setMobileView('preview')}
-          className={`rounded-button py-2 text-sm font-medium transition-colors ${mobileView === 'preview' ? 'bg-brand-600 text-white' : 'text-surface-500'}`}
-        >
           Preview
         </button>
       </div>
 
-      {/* 3-column layout */}
-      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_520px]">
+      {/* 3-column layout: sidebar (240px), form editor (~55%), live preview (~45%) */}
+      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1.2fr)_minmax(0,1fr)]">
         {/* Step sidebar */}
         <aside className={`${mobileView === 'preview' ? 'hidden' : 'block'} lg:block`}>
           <div className="card sticky top-20 p-4 space-y-4">
@@ -357,7 +351,7 @@ function BuilderEdition({ id }) {
 
         {/* Form editor */}
         <div className={`${mobileView === 'preview' ? 'hidden' : 'block'} lg:block`}>
-          <div className="mx-auto max-w-2xl space-y-5">
+          <div className="w-full space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <span className="badge badge-gray mb-2">Step {currentStep + 1} of {steps.length}</span>

@@ -236,7 +236,7 @@ export default function Layout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto flex flex-col justify-between">
-          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex-1">
+          <div className={`mx-auto w-full ${isBuilder ? 'max-w-[1536px]' : 'max-w-7xl'} px-4 py-6 sm:px-6 lg:px-8 flex-1 flex flex-col`}>
             <Outlet />
           </div>
           {!isBuilder && <Footer />}

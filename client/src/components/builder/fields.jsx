@@ -6,12 +6,13 @@ const inputBase =
 const inputError =
   'border-red-300 hover:border-red-400 focus:border-red-500 focus:ring-red-500/15 dark:border-red-800 dark:focus:border-red-500';
 
-const inputMixin = `rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-500 dark:hover:border-surface-600 dark:focus:border-brand-400 dark:focus:ring-brand-500/25`;
+const inputMixin =
+  'w-full rounded-input border border-surface-200 bg-white px-3.5 py-2.5 text-sm text-surface-900 shadow-card transition-all duration-150 placeholder:text-surface-400 hover:border-surface-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100 dark:placeholder:text-surface-500 dark:hover:border-surface-600 dark:focus:border-brand-400 dark:focus:ring-brand-500/25';
 
 export function Input({ label, value, onChange, placeholder, type = 'text', className = '', helper, error, onKeyDown, ...props }) {
   return (
     <label className={`block ${className}`}>
-      {label && <span className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">{label}</span>}
+      {label && <span className="mb-1.5 block text-sm font-medium leading-5 text-surface-700 dark:text-surface-300 whitespace-nowrap truncate">{label}</span>}
       <input
         type={type}
         value={value ?? ''}
@@ -36,7 +37,7 @@ export function Input({ label, value, onChange, placeholder, type = 'text', clas
 export function Textarea({ label, value, onChange, placeholder, rows = 3, className = '', onKeyDown, ...props }) {
   return (
     <label className={`block ${className}`}>
-      {label && <span className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">{label}</span>}
+      {label && <span className="mb-1.5 block text-sm font-medium leading-5 text-surface-700 dark:text-surface-300">{label}</span>}
       <textarea
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
@@ -48,14 +49,14 @@ export function Textarea({ label, value, onChange, placeholder, rows = 3, classN
         }}
         placeholder={placeholder}
         rows={rows}
-        className={`${inputMixin} resize-y`}
+        className={`${inputMixin} h-[100px] min-h-[90px] max-h-[220px] resize-y`}
         {...props}
       />
     </label>
   );
 }
 
-export function FieldGrid({ children, cols = 'sm:grid-cols-2 xl:grid-cols-3' }) {
+export function FieldGrid({ children, cols = 'sm:grid-cols-2' }) {
   return <div className={`grid grid-cols-1 gap-4 ${cols}`}>{children}</div>;
 }
 
