@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, downloadBlob } from '../api/client';
 import { makeEmptyResume } from '../lib/resume';
@@ -75,23 +75,31 @@ export default function DashboardPage() {
     }
   }
 
+  const loadResumes = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await api.get('/resumes');
+      setResumes(data.resumes || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load resumes.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
-
-    async function load() {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await api.get('/resumes');
-        if (mounted) setResumes(data.resumes);
-      } catch (err) {
-        if (mounted) setError(err.message);
-      } finally {
+    api.get('/resumes')
+      .then((data) => {
+        if (mounted) setResumes(data.resumes || []);
+      })
+      .catch((err) => {
+        if (mounted) setError(err.message || 'Failed to load resumes.');
+      })
+      .finally(() => {
         if (mounted) setLoading(false);
-      }
-    }
-
-    load();
+      });
     return () => {
       mounted = false;
     };
@@ -250,7 +258,7 @@ export default function DashboardPage() {
             <p className="text-sm font-medium text-red-700">
               {error.includes('Failed to fetch') ? 'Unable to connect to the server.' : error}
             </p>
-            <button onClick={load} className="mt-1 text-sm font-semibold text-red-600 underline hover:text-red-700">
+            <button onClick={loadResumes} className="mt-1 text-sm font-semibold text-red-600 underline hover:text-red-700">
               Try again
             </button>
           </div>

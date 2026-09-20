@@ -25,9 +25,11 @@ export default function AtsScorePanel({ open, onClose, resumeId, onToast }) {
   }, [resumeId, jobDescription]);
 
   useEffect(() => {
-    if (open && resumeId) {
+    if (!open || !resumeId) return;
+    const timer = setTimeout(() => {
       fetchScore();
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [open, resumeId, fetchScore]);
 
   function handleAddSkill(keyword) {

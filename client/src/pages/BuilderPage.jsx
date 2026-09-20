@@ -19,8 +19,6 @@ import TemplateSwitcher from '../components/builder/TemplateSwitcher';
 
 import Toast from '../components/ui/Toast';
 
-const MIN_STEPS = 7;
-
 export default function BuilderPage() {
   const { id } = useParams();
   const seed = useMemo(() => makeEmptyResume(), []);
@@ -40,22 +38,18 @@ function BuilderEdition({ id }) {
   const [loadError, setLoadError] = useState('');
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [savedState, setSavedState] = useState('idle'); // idle | saving | saved
+  const saving = savedState === 'saving';
   const [toast, setToast] = useState({ open: false, type: 'success', message: '' });
   const [mobileView, setMobileView] = useState('edit'); // edit | preview
   const [validationErrors, setValidationErrors] = useState({});
   const saveTimer = useRef(null);
   const autosaveTimer = useRef(null);
-  const lastSavedResume = useRef(null);
+  const lastSavedResume = useRef(id ? null : JSON.stringify(resume));
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      lastSavedResume.current = JSON.stringify(resume);
-      return;
-    }
+    if (!id) return;
     let isCancelled = false;
     (async function initialLoad() {
       setLoading(true);
@@ -88,7 +82,7 @@ function BuilderEdition({ id }) {
   // Autosave: debounced 1.5s on field change
   useEffect(() => {
     // Never autosave while loading or if there's a load error
-    if (loading || loadError || !resume || saving || savedState === 'saving') return;
+    if (loading || loadError || !resume || savedState === 'saving') return;
     // If we are editing an existing resume (:id in URL), NEVER save until resume._id matches id
     if (id && (!resume._id || resume._id !== id)) return;
     // If no changes have been made since last save/load, do nothing
@@ -125,7 +119,7 @@ function BuilderEdition({ id }) {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [resume, resume._id, id, loading, loadError, saving, savedState, navigate, setResume]);
+  }, [resume, id, loading, loadError, savedState, navigate, setResume]);
 
   // Clear validation errors when user makes changes
   const prevResumeRef = useRef(resume);
@@ -140,8 +134,8 @@ function BuilderEdition({ id }) {
     setToast({ open: true, type, message });
   }
 
-  function serialize(data) {
-    const plain = JSON.parse(JSON.stringify(data));
+  function serialize(raw) {
+    const plain = JSON.parse(JSON.stringify(raw));
     delete plain._id;
     delete plain.user_id;
     delete plain.created_at;
@@ -150,7 +144,8 @@ function BuilderEdition({ id }) {
     for (const section of ['education', 'experience', 'projects', 'certifications', 'languages', 'leadership']) {
       plain[section] = (plain[section] || []).map((item) => {
         if (typeof item === 'string') return item;
-        const { _key, ...rest } = item;
+        const rest = { ...item };
+        delete rest._key;
         return rest;
       });
     }

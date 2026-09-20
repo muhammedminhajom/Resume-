@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, ArrowLeft, Scale, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
+import { FileText, ArrowLeft, Scale, CheckCircle2, AlertTriangle } from 'lucide-react';
 import Footer from '../components/common/Footer';
 
 export default function TermsOfServicePage() {

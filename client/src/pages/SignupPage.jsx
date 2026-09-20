@@ -98,10 +98,6 @@ export default function SignupPage() {
     }
   }
 
-  function toggle(target) {
-    setForm((f) => ({ ...f, [target]: !f[target] }));
-  }
-
   return (
     <AuthLayout
       title="Create your professional resume"
@@ -172,7 +168,7 @@ export default function SignupPage() {
             />
             <button
               type="button"
-              onClick={() => toggle('showPassword')}
+              onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 transition-colors hover:text-surface-600"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}

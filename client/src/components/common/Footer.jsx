@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, FileText, Heart } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 export default function Footer({ className = '' }) {
   const currentYear = new Date().getFullYear();

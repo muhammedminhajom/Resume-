@@ -45,7 +45,7 @@ const STOPWORDS = new Set([
   'skills', 'years', 'opportunity', 'strong', 'ideal', 'include', 'includes'
 ]);
 
-const METRIC_REGEX = /(?:\b\d+(?:[\.,]\d+)?\s*(?:%|percent|k|m|b|x|users|clients|customers|ms|sec|hours|days|weeks|months|years|pts|points|usd|eur|gbp)\b|\$[\d,]+|\b\d+\b)/i;
+const METRIC_REGEX = /(?:\b\d+(?:[.,]\d+)?\s*(?:%|percent|k|m|b|x|users|clients|customers|ms|sec|hours|days|weeks|months|years|pts|points|usd|eur|gbp)\b|\$[\d,]+|\b\d+\b)/i;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function extractFirstWord(sentence) {
@@ -221,7 +221,7 @@ function analyzeResume(resume, jobDescription = '') {
 
   // 7. Skills Keyword Count (10 pts)
   const validSkills = skills.filter((s) => String(s).trim().length > 0);
-  let skillScore = 0;
+  let skillScore;
   if (validSkills.length >= 8) skillScore = 10;
   else if (validSkills.length >= 5) skillScore = 8;
   else if (validSkills.length >= 3) skillScore = 5;

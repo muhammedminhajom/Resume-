@@ -82,7 +82,7 @@ async function sendViaSMTP(to, subject, html) {
       response: err.response,
       command: err.command,
     });
-    throw new Error(`${diagnosis} (raw: ${err.message})`);
+    throw new Error(`${diagnosis} (raw: ${err.message})`, { cause: err });
   }
 }
 

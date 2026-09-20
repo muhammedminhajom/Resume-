@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, Sparkles, FileText, ArrowRight } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 import { api } from '../api/client';
 import ResumeUploadDropzone from '../components/common/ResumeUploadDropzone';
 
@@ -190,7 +190,7 @@ export default function AtsCheckerPage() {
                   </select>
                 ) : (
                   <div className="rounded-lg border border-surface-200 bg-surface-50 p-4 text-xs text-surface-600">
-                    No saved resumes found. Switch to "Upload File" or "Paste Raw Text" above.
+                    No saved resumes found. Switch to &quot;Upload File&quot; or &quot;Paste Raw Text&quot; above.
                   </div>
                 )}
               </div>

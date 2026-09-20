@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, ArrowLeft, Lock, Cookie, FileText, Globe, Eye } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Lock, Cookie, FileText } from 'lucide-react';
 import Footer from '../components/common/Footer';
 
 export default function PrivacyPolicyPage() {

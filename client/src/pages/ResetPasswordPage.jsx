@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { AuthLayout, ErrorAlert } from './LoginPage';
 
@@ -26,7 +25,6 @@ const STRENGTH_COLORS = [
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const navigate = useNavigate();
   const [form, setForm] = useState({ password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -81,10 +79,6 @@ export default function ResetPasswordPage() {
     }
   }
 
-  function toggle(target) {
-    setForm((f) => ({ ...f, [target]: !f[target] }));
-  }
-
   return (
     <AuthLayout
       title="Set new password"
@@ -132,7 +126,7 @@ export default function ResetPasswordPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => toggle('showPassword')}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 transition-colors hover:text-surface-600"
                   tabIndex={-1}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}

@@ -39,7 +39,7 @@ export default function AdSlot({
       } catch (err) {
         // Suppress AdSense push errors in dev or when blocked by ad blockers
         if (isDev) {
-          console.debug('[AdSense] AdSlot notice:', err?.message || err);
+          console.warn('[AdSense] AdSlot notice:', err?.message || err);
         }
       }
     }

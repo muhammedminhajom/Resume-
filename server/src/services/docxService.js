@@ -3,7 +3,6 @@ const {
   Packer,
   Paragraph,
   TextRun,
-  HeadingLevel,
   AlignmentType,
   BorderStyle,
 } = require('docx');
@@ -46,21 +45,7 @@ function sortReverseChronological(items) {
   });
 }
 
-function createTextRun(text, options = {}, font = 'Arial') {
-  return new TextRun({
-    text: sanitizeHtml(text),
-    font,
-    color: '000000',
-    ...options,
-  });
-}
 
-function createParagraph(textRuns, options = {}) {
-  return new Paragraph({
-    children: textRuns.map((r) => (typeof r === 'string' ? createTextRun(r) : r)),
-    ...options,
-  });
-}
 
 function createSectionHeading(text, font) {
   return new Paragraph({

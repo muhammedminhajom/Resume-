@@ -38,7 +38,7 @@ async function extractTextFromFile(buffer, originalname, mimetype) {
       return text;
     } catch (err) {
       if (err.message.includes('scanned image')) throw err;
-      throw new Error(`Failed to parse PDF document: ${err.message || 'Corrupt or unreadable file'}`);
+      throw new Error(`Failed to parse PDF document: ${err.message || 'Corrupt or unreadable file'}`, { cause: err });
     } finally {
       if (parser && typeof parser.destroy === 'function') {
         try {
@@ -66,7 +66,7 @@ async function extractTextFromFile(buffer, originalname, mimetype) {
       }
       return text;
     } catch (err) {
-      throw new Error(`Failed to parse Word document: ${err.message || 'Corrupt or unreadable file'}`);
+      throw new Error(`Failed to parse Word document: ${err.message || 'Corrupt or unreadable file'}`, { cause: err });
     }
   }
 

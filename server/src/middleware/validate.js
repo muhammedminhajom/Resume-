@@ -106,7 +106,7 @@ function validateResumeBody(req, res, next) {
     }
   }
 
-  const arrayFields = ['education', 'experience', 'projects', 'leadership', 'certifications', 'languages', 'section_order'];
+  const arrayFields = ['skills', 'education', 'experience', 'projects', 'leadership', 'certifications', 'languages', 'section_order'];
   for (const field of arrayFields) {
     if (body[field] !== undefined && !Array.isArray(body[field])) {
       return res.status(400).json({ message: `Field '${field}' must be an array.` });

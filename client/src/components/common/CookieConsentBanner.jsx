@@ -23,14 +23,18 @@ export default function CookieConsentBanner() {
   const handleAccept = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'accepted', timestamp: Date.now() }));
-    } catch {}
+    } catch {
+      // ignore storage error
+    }
     setVisible(false);
   };
 
   const handleDismiss = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'declined', timestamp: Date.now() }));
-    } catch {}
+    } catch {
+      // ignore storage error
+    }
     setVisible(false);
   };
 

@@ -1,18 +1,10 @@
 import { useResume } from '../../../context/ResumeContext';
-import { Input, Textarea, FieldGrid, TagInput, EmptyHint, AddButton } from '../fields';
+import { Input, Textarea, FieldGrid, TagInput } from '../fields';
 
 export default function PersonalInfoStep({ errors = {} }) {
   const { resume, setSection } = useResume();
   const p = resume.personal_info || {};
   const set = (key, value) => setSection('personal_info', { ...p, [key]: value });
-
-  const setLink = (index, value) => {
-    const links = [...(p.links || [])];
-    links[index] = value;
-    set('links', links);
-  };
-  const addLink = () => set('links', [...(p.links || []), '']);
-  const removeLink = (index) => set('links', (p.links || []).filter((_, i) => i !== index));
 
   return (
     <div className="space-y-5">

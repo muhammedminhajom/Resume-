@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Target, CheckCircle2, AlertCircle, Sparkles, RefreshCw, Lightbulb, ArrowRight, Plus } from 'lucide-react';
+import { Target, CheckCircle2, AlertCircle, Sparkles, RefreshCw, Lightbulb } from 'lucide-react';
 import { api } from '../api/client';
 import ResumeUploadDropzone from '../components/common/ResumeUploadDropzone';
 
@@ -190,7 +190,7 @@ export default function JobMatchPage() {
                   </select>
                 ) : (
                   <div className="rounded-lg border border-surface-200 bg-surface-50 p-4 text-xs text-surface-600 dark:border-surface-800 dark:bg-surface-950/60 dark:text-surface-400">
-                    No saved resumes available. Switch to "Upload File" or "Paste Raw Text" above.
+                    No saved resumes available. Switch to &quot;Upload File&quot; or &quot;Paste Raw Text&quot; above.
                   </div>
                 )}
               </div>
